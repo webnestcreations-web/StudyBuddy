@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Study Buddy">
+<title>Study Buddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root{--card:rgba(255,255,255,0.92);--text:#2C3E50;--correct:#4CAF50;--correct-bg:#E8F5E9;--wrong:#EF5350;--wrong-bg:#FFEBEE;--warning:#FF9800;--warning-bg:#FFF3E0;--hint-bg:#FFF8E1;--hint-border:#FFC107}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;min-height:-webkit-fill-available;font-family:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body.ss-theme{background:linear-gradient(135deg,#FFECD2 0%,#FCB69F 50%,#FF9A9E 100%)}
+body.math-theme{background:linear-gradient(135deg,#E0F7FA 0%,#80DEEA 50%,#4DD0E1 100%)}
+body.home-theme{background:linear-gradient(135deg,#a8edea 0%,#fed6e3 50%,#d299c2 100%)}
+html{height:-webkit-fill-available}
+.ctn{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%{transform:scale(.85);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@keyframes confettiFall{0%{transform:translateY(-10vh) rotate(0);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+.hdr{text-align:center;margin-bottom:18px;animation:slideUp .4s ease}
+.hdr h1{font-family:'Fredoka One',cursive;font-size:36px;color:var(--text);text-shadow:2px 2px 0 rgba(255,255,255,.5)}
+.hdr.sm h1{font-size:22px}
+.hdr p{color:#555;font-size:14px;font-weight:600;margin-top:3px}
+
+/* Subject picker */
+.subj-grid{display:flex;gap:14px;margin-bottom:20px;animation:slideUp .4s ease}
+.subj-card{flex:1;background:var(--card);border-radius:20px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .25s;box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.subj-card:hover{transform:translateY(-4px);box-shadow:0 12px 35px rgba(0,0,0,.12)}
+.subj-card:active{transform:scale(.96)}
+.subj-card .icon{font-size:48px;margin-bottom:8px}
+.subj-card .name{font-weight:800;font-size:16px}
+.subj-card .desc{font-size:11px;color:#888;font-weight:600;margin-top:3px}
+
+.tabs{display:flex;gap:4px;margin-bottom:16px;background:rgba(255,255,255,.4);border-radius:13px;padding:4px}
+.tab{flex:1;text-align:center;padding:9px 6px;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer;border:none;background:0 0;font-family:inherit;color:#888;transition:all .2s}
+.tab.on{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+
+.card{background:var(--card);border-radius:20px;padding:22px 20px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:12px;animation:slideUp .4s ease}
+.intro{text-align:center;color:#4A4A4A;font-size:13px;margin-bottom:18px;background:rgba(255,255,255,.6);border-radius:15px;padding:13px 16px;font-weight:600;line-height:1.6}
+
+/* Topic cards */
+.tc{cursor:pointer;display:flex;align-items:center;gap:13px;transition:all .2s}
+.tc:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.1)}
+.tc:active{transform:scale(.98)}
+.ti{font-size:26px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;border-radius:12px;flex-shrink:0}
+.tn{font-weight:800;font-size:14px}
+.tm{font-size:11px;color:#999;font-weight:600;margin-top:2px}
+.td{font-size:11px;color:#777;font-weight:600;margin-top:2px;line-height:1.4}
+
+.pr{position:relative;flex-shrink:0;width:42px;height:42px}
+.pr svg{transform:rotate(-90deg);display:block}
+.prt{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+
+.nav{display:flex;align-items:center;gap:10px;margin-bottom:13px;animation:slideUp .3s ease}
+.bk{background:rgba(255,255,255,.7);border:none;border-radius:10px;padding:7px 12px;cursor:pointer;font-weight:700;font-size:12px;color:#666;font-family:inherit}
+.pgw{flex:1;background:rgba(255,255,255,.5);border-radius:7px;height:6px;overflow:hidden}
+.pgf{height:100%;border-radius:7px;transition:width .4s ease}
+.pgn{font-size:12px;font-weight:700;color:#666}
+.bdg{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:16px;font-size:11px;font-weight:700;margin-bottom:11px}
+
+/* SS Quiz styles */
+.qc{background:var(--card);border-radius:20px;padding:22px 18px;box-shadow:0 6px 22px rgba(0,0,0,.07);animation:slideUp .35s ease}
+.qb{display:inline-block;color:#fff;padding:3px 10px;border-radius:8px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px}
+.qt{font-size:16px;font-weight:800;line-height:1.5;margin-bottom:16px}
+.diff{display:inline-block;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-left:6px;vertical-align:middle}
+.diff.hard{background:#FFEBEE;color:#C62828}
+.diff.medium{background:#FFF3E0;color:#E65100}
+
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{background:rgba(245,245,245,.8);border:2px solid transparent;border-radius:13px;padding:12px 15px;cursor:pointer;text-align:left;font-size:13px;font-weight:600;color:#333;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:10px;-webkit-appearance:none}
+.opt:active:not(.lk){transform:scale(.98)}
+.opt.lk{cursor:default}
+.opt.cor{background:var(--correct-bg);border-color:var(--correct);color:#2E7D32}
+.opt.wrg{background:var(--wrong-bg);border-color:var(--wrong);color:#C62828}
+.ol{width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex-shrink:0}
+
+.tfw{display:flex;gap:11px}
+.tf{flex:1;padding:15px;border-radius:15px;border:3px solid #E0E0E0;background:#fff;cursor:pointer;font-family:inherit;font-size:16px;font-weight:800;transition:all .2s;text-align:center;-webkit-appearance:none}
+.tf:active:not(.lk){transform:scale(.96)}
+.tf.lk{cursor:default}
+.tf.cor{background:var(--correct-bg);border-color:var(--correct);color:#2E7D32}
+.tf.wrg{background:var(--wrong-bg);border-color:var(--wrong);color:#C62828}
+
+.expl{margin-top:13px;padding:13px 15px;border-radius:13px;animation:slideUp .3s ease;line-height:1.6}
+.expl.cor{background:var(--correct-bg);border:2px solid var(--correct)}
+.expl.inc{background:var(--warning-bg);border:2px solid var(--warning)}
+.et{font-weight:800;font-size:13px;margin-bottom:4px}
+.eb{font-size:12px;color:#444;font-weight:600}
+.fun{margin-top:7px;padding:8px 12px;background:#F3E5F5;border-radius:10px;font-size:11px;font-weight:600;color:#6A1B9A;border-left:3px solid #AB47BC}
+
+.fib-input{width:100%;padding:13px 15px;border-radius:13px;border:2px solid #E0E0E0;font-size:15px;font-family:inherit;font-weight:600;color:#333;-webkit-appearance:none;transition:border-color .2s,box-shadow .2s}
+.fib-input:focus{outline:none;border-color:#FF6B6B;box-shadow:0 0 0 3px rgba(255,107,107,.15)}
+.fib-input:disabled{background:#F5F5F5}
+.fib-hint{font-size:11px;color:#999;font-weight:600;margin-top:4px;font-style:italic}
+
+.match-grid{display:flex;flex-direction:column;gap:10px}
+.match-row{display:flex;align-items:center;gap:8px;background:rgba(245,245,245,.6);border-radius:12px;padding:10px 12px}
+.match-label{font-weight:700;font-size:13px;flex:1;min-width:0}
+.match-select{flex:1;padding:8px 10px;border-radius:10px;border:2px solid #E0E0E0;font-family:inherit;font-size:12px;font-weight:600;background:#fff;color:#333;-webkit-appearance:auto;cursor:pointer}
+.match-select:disabled{background:#F5F5F5}
+.match-row.cor{border:2px solid var(--correct);background:var(--correct-bg)}
+.match-row.wrg{border:2px solid var(--wrong);background:var(--wrong-bg)}
+.match-arrow{font-size:16px;flex-shrink:0;color:#ccc}
+
+.hints{background:var(--hint-bg);border-radius:12px;padding:10px 14px;margin-bottom:11px;border-left:3px solid var(--hint-border)}
+.ht{font-weight:800;font-size:11px;color:#F57F17;margin-bottom:4px}
+.hi{font-size:11px;color:#795548;margin-bottom:2px;font-weight:600}
+.wa{width:100%;min-height:120px;border-radius:13px;border:2px solid #E0E0E0;padding:12px 14px;font-size:13px;font-family:inherit;font-weight:600;resize:vertical;color:#333;line-height:1.6;-webkit-appearance:none}
+.wa:focus{outline:none;border-color:#FF6B6B;box-shadow:0 0 0 3px rgba(255,107,107,.15)}
+.wa:disabled{background:#F5F5F5}
+.wc{text-align:right;font-size:10px;color:#999;font-weight:600;margin-top:3px}
+.wfb{margin-top:11px;padding:12px 15px;border-radius:13px;font-size:12px;font-weight:600;color:#333;animation:slideUp .3s ease;line-height:1.5}
+.wfb.great{background:var(--correct-bg);border:2px solid var(--correct)}
+.wfb.good{background:var(--hint-bg);border:2px solid var(--hint-border)}
+.wfb.try{background:var(--warning-bg);border:2px solid var(--warning)}
+
+.sbtn{margin-top:10px;border:none;border-radius:12px;padding:11px 22px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;color:#fff;-webkit-appearance:none}
+.sbtn:disabled{background:#ccc!important;cursor:default}
+.nbtn{margin-top:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;width:100%;letter-spacing:.5px;-webkit-appearance:none}
+.nbtn:active{transform:scale(.98)}
+
+.sctr{margin-top:11px;text-align:center;font-size:12px;font-weight:700;color:rgba(0,0,0,.35);text-shadow:1px 1px 2px rgba(255,255,255,.3)}
+.strk{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:3px;font-size:11px}
+
+.rcard{text-align:center;background:var(--card);border-radius:22px;padding:28px 22px;box-shadow:0 8px 32px rgba(0,0,0,.08);animation:pop .4s ease}
+.remj{font-size:52px;margin-bottom:10px;animation:float 2s ease-in-out infinite}
+.rttl{font-family:'Fredoka One',cursive;font-size:24px;margin-bottom:6px}
+.rtpc{font-size:14px;color:#666;font-weight:600;margin-bottom:16px}
+.rring{display:inline-flex;position:relative;margin-bottom:16px}
+.rpct{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900}
+.rscr{font-size:16px;font-weight:700;margin-bottom:6px}
+.rmsg{font-size:12px;color:#888;font-weight:600;margin-bottom:22px}
+.rbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.rb{border:none;border-radius:12px;padding:12px 22px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;-webkit-appearance:none}
+.rb.pri{color:#fff}
+.rb.sec{background:rgba(0,0,0,.06);color:#555}
+
+.rev{background:var(--card);border-radius:13px;padding:12px 14px;margin-bottom:7px}
+.revq{font-weight:700;font-size:12px;margin-bottom:3px}
+.reva{font-size:11px;color:#555;font-weight:600}
+.revc{font-size:10px;font-weight:800;margin-top:2px;color:var(--correct)}
+
+.calcard{background:var(--card);border-radius:18px;padding:18px 16px;box-shadow:0 4px 18px rgba(0,0,0,.05);margin-bottom:14px}
+.calt{font-weight:800;font-size:15px;margin-bottom:3px}
+.cals{font-size:11px;color:#888;font-weight:600;margin-bottom:12px}
+.calg{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center}
+.calh{font-size:10px;font-weight:800;color:#AAA;padding-bottom:3px}
+.cald{width:100%;aspect-ratio:1;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#999;background:rgba(0,0,0,.03)}
+.cald.std{background:#E8F5E9;color:#2E7D32;position:relative}
+.cald.std::after{content:'\2713';position:absolute;top:1px;right:2px;font-size:7px;color:#4CAF50}
+.cald.tdy{border:2px solid #FF6B6B;color:#FF6B6B;font-weight:900}
+.cald.emp{background:0 0}
+.strow{display:flex;gap:8px;margin-bottom:14px}
+.stcard{flex:1;background:var(--card);border-radius:14px;padding:12px 10px;text-align:center;box-shadow:0 3px 12px rgba(0,0,0,.04)}
+.stnum{font-family:'Fredoka One',cursive;font-size:24px}
+.stlbl{font-size:10px;color:#888;font-weight:700;margin-top:2px}
+
+.confetti{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:998}
+.confp{position:absolute;width:10px;height:10px;top:-5%}
+.ftr{text-align:center;margin-top:22px;font-size:10px;color:rgba(0,0,0,.2);font-weight:600}
+
+/* Math lesson styles */
+.lesson-title{font-family:'Fredoka One',cursive;font-size:20px;margin-bottom:10px;color:var(--text)}
+.lesson-text{font-size:14px;line-height:1.8;font-weight:600;color:#333;margin-bottom:12px}
+.lesson-text strong{color:var(--text)}
+.frac-visual{display:flex;gap:4px;margin:12px 0;flex-wrap:wrap;justify-content:center}
+.frac-piece{width:40px;height:40px;border-radius:8px;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800}
+.frac-piece.filled{background:#FF6B6B;border-color:#E53935;color:white}
+.frac-piece.empty{background:#f5f5f5;border-color:#ddd;color:#ccc}
+.step-box{background:#F3E5F5;border-radius:14px;padding:16px;margin:12px 0;border-left:4px solid #7C4DFF}
+.step-box.blue{background:#E3F2FD;border-color:#2196F3}
+.step-box.green{background:var(--correct-bg);border-color:var(--correct)}
+.step-box.orange{background:#FFF3E0;border-color:#FF9800}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#7C4DFF;color:white;font-weight:800;font-size:12px;margin-right:8px}
+.step-box.blue .step-num{background:#2196F3}
+.step-box.green .step-num{background:var(--correct)}
+.step-box.orange .step-num{background:#FF9800}
+.step-text{font-size:14px;font-weight:600;color:#333;line-height:1.6}
+.step-math{font-family:'Fredoka One',cursive;font-size:22px;text-align:center;margin:10px 0;color:var(--text)}
+.encourage{background:linear-gradient(135deg,#FFD54F,#FFB74D);border-radius:14px;padding:14px 18px;margin:14px 0;text-align:center;font-weight:700;font-size:14px;color:#5D4037}
+.bar-model{display:flex;margin:12px 0;border-radius:8px;overflow:hidden;height:36px}
+.bar-seg{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;border-right:2px solid rgba(255,255,255,.5)}
+.bar-seg:last-child{border-right:none}
+.bar-seg.on{background:#FF6B6B}
+.bar-seg.off{background:#e0e0e0;color:#999}
+
+/* Math MC */
+.mc-opts{display:flex;flex-direction:column;gap:8px}
+.mc-opt{background:#f5f5f5;border:2px solid transparent;border-radius:13px;padding:13px 16px;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;text-align:center;transition:all .2s;-webkit-appearance:none;color:#333}
+.mc-opt:active:not(.lk){transform:scale(.97)}
+.mc-opt.lk{cursor:default}
+.mc-opt.cor{background:var(--correct-bg);border-color:var(--correct);color:#2E7D32}
+.mc-opt.wrg{background:var(--wrong-bg);border-color:var(--wrong);color:#C62828}
+.fb{padding:14px 16px;border-radius:14px;margin-top:12px;font-size:13px;font-weight:600;line-height:1.6;animation:slideUp .3s ease}
+.fb.correct{background:var(--correct-bg);border:2px solid var(--correct);color:#2E7D32}
+.fb.wrong{background:var(--wrong-bg);border:2px solid var(--wrong);color:#C62828}
+
+.tc-status{font-size:10px;font-weight:800;padding:3px 10px;border-radius:8px;display:inline-block;margin-top:4px}
+
+@media(max-width:480px){.hdr h1{font-size:28px}.hdr.sm h1{font-size:20px}.qt{font-size:14px}.cald{font-size:9px}.stnum{font-size:20px}.subj-card .icon{font-size:36px}.subj-card .name{font-size:14px}.step-math{font-size:18px}.frac-piece{width:34px;height:34px;font-size:15px}}
+</style>
+</head>
+<body class="home-theme">
+<div class="ctn" id="app"></div>
+<script>
+"use strict";
+document.addEventListener('DOMContentLoaded', function(){
+
+/* Fuzzy spelling match */
+function fuzzyMatch(input, targets) {
+  var val = input.trim().toLowerCase().replace(/[^a-z0-9 ]/g,"");
+  for (var t = 0; t < targets.length; t++) {
+    var target = targets[t].toLowerCase().replace(/[^a-z0-9 ]/g,"");
+    if (val === target) return {match:true,exact:true};
+    if (val.length >= 3 && target.indexOf(val) !== -1) return {match:true,exact:false};
+    if (val.length >= 3 && val.indexOf(target) !== -1) return {match:true,exact:false};
+    var dist=0,m=val.length,n=target.length,d=[];
+    for(var i=0;i<=m;i++){d[i]=[i];}for(var j=0;j<=n;j++){d[0][j]=j;}
+    for(var i=1;i<=m;i++){for(var j=1;j<=n;j++){var c=val[i-1]===target[j-1]?0:1;d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+c);}}
+    dist=d[m][n];
+    if(dist<=Math.max(1,Math.floor(target.length*0.25))) return {match:true,exact:false};
+  }
+  return {match:false,exact:false};
+}
+function shuffleOpts(q){if(q._sh)return;var idx=[];for(var i=0;i<q.options.length;i++)idx.push(i);for(var i=idx.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=idx[i];idx[i]=idx[j];idx[j]=t;}q.options=idx.map(function(k){return q.options[k];});q.answer=idx.indexOf(q.answer);q._sh=true;}
+
+var SS_TOPICS=[
+{id:"iron-curtain",name:"The Iron Curtain",emoji:"\u{1FAB7}",color:"#E74C3C",questions:[
+{type:"multiple",q:"Winston Churchill used the term 'Iron Curtain' in 1946. Which statement BEST explains why he chose that metaphor?",options:["He wanted to describe a literal metal wall being built","He meant that the Soviet Union had created a barrier that was impossible to see through or cross freely","He was talking about a new military weapon","He was describing the weather in Eastern Europe"],answer:1,explanation:"Churchill chose 'Iron Curtain' because iron is strong, heavy, and impossible to see through \u2014 just like the political barrier the Soviet Union created. People in Eastern Europe couldn't freely travel, communicate, or make choices about their government.",diff:"hard"},
+{type:"multiple",q:"Which of the following is the BEST reason the Cold War was called 'cold'?",options:["Both sides had nuclear weapons so powerful that direct war could destroy the world","It took place in cold regions like Siberia and Alaska","Neither side had strong enough armies to fight","The leaders personally got along well"],answer:0,explanation:"The key reason it stayed 'cold' was M.A.D. \u2014 Mutually Assured Destruction. Both sides had so many nuclear weapons that a direct war would destroy both countries (and possibly the world), so they competed through other means instead.",diff:"hard"},
+{type:"multiple",q:"Which of these was NOT true about life behind the Iron Curtain?",options:["People had limited freedom of speech","Citizens could freely travel to Western countries anytime","The government controlled newspapers and media","Secret police monitored citizens"],answer:1,explanation:"People behind the Iron Curtain could NOT freely travel to the West! In fact, many people risked their lives trying to escape. The Berlin Wall was built specifically to STOP people from fleeing East Germany.",diff:"medium"},
+{type:"fib",q:"The term 'Iron Curtain' was made famous by __________ in a speech he gave in 1946 in Fulton, Missouri.",answer:["winston churchill","churchill","churchil","churhill","winstin churchill"],explanation:"Winston Churchill, Britain's former Prime Minister, gave this famous speech warning the free world about Soviet expansion. President Truman was sitting right next to him when he said it!",hint:"He was the Prime Minister of Britain during WWII"},
+{type:"fib",q:"The Cold War was a rivalry between two types of government: __________ in the West and __________ in the East.",answer:["democracy","communism"],multi:true,explanation:"The West (led by the U.S.) believed in democracy \u2014 where people choose their leaders. The East (led by the Soviet Union) had communism \u2014 where the government controlled almost everything and people had few political choices.",hint:"Think about the two different systems of government"},
+{type:"tf",q:"The Iron Curtain divided Europe into communist East and democratic West, but people could still travel freely between the two sides.",answer:false,explanation:"FALSE! That's exactly what made the Iron Curtain so serious \u2014 people could NOT move freely. Borders were heavily guarded, and trying to cross could get you arrested or even killed. The Berlin Wall had armed guards and barbed wire."},
+{type:"tf",q:"The U.S. and Soviet Union were allies during World War II before becoming rivals in the Cold War.",answer:true,explanation:"Yes! This is an important detail. The U.S. and Soviet Union fought TOGETHER against Nazi Germany in WWII. But once the war ended, they quickly became rivals because they had very different ideas about how the world should work."},
+{type:"write",q:"THINK DEEPER: Why do you think the Cold War started between two countries that had just been allies in WWII? What changed after the war ended?",hints:["They had different government systems \u2014 why did that matter after WWII?","What did each side want for Europe after the war?","How did nuclear weapons change things?","Think about trust \u2014 why would former allies stop trusting each other?"],keyWords:["communist","democratic","trust","power","control","Europe","nuclear","government","different","spread","afraid","weapons","allies","enemies"]},
+{type:"match",q:"Match each term to its correct description:",pairs:[{left:"Iron Curtain",right:"Invisible divide between East and West Europe"},{left:"Cold War",right:"Rivalry without direct fighting between U.S. and Soviet Union"},{left:"Communism",right:"Government controls economy, few political freedoms"},{left:"Democracy",right:"People choose leaders through elections"}],explanation:"These four terms are all connected! The Cold War was fought between democracy (West) and communism (East), and the Iron Curtain was the dividing line between them."}
+]},
+{id:"stopping-communism",name:"Stopping Communism",emoji:"\u2708\uFE0F",color:"#3498DB",questions:[
+{type:"multiple",q:"The Berlin Airlift was successful because it showed the world that:",options:["The U.S. military could defeat the Soviet army in battle","Western democracies would find creative, peaceful solutions rather than start a war","The Soviet Union was ready to cooperate with the West","Berlin wasn't important to either side"],answer:1,explanation:"The Berlin Airlift was brilliant because it solved the crisis WITHOUT starting a war. Instead of trying to force through the Soviet blockade (which could have started WWIII), the U.S. flew OVER it. It showed the world that democracies were resourceful and committed to protecting people.",diff:"hard"},
+{type:"multiple",q:"Why is the Korean War significant even though many people call it 'The Forgotten War'?",options:["It was the first time the U.S. fought communism with actual military force during the Cold War","It was the longest war in American history","North Korea surrendered quickly","It ended communism in Asia"],answer:0,explanation:"The Korean War matters because it showed the U.S. would actually USE military force to stop communism \u2014 not just talk about it. Before Korea, containment was mostly about aid and diplomacy. Korea proved America would fight.",diff:"hard"},
+{type:"multiple",q:"Which statement about NATO is MOST accurate?",options:["NATO was a trade agreement to help economies grow","NATO meant that an attack on one member was an attack on ALL members","NATO was created by the Soviet Union","NATO only included the U.S. and Britain"],answer:1,explanation:"NATO's core principle is collective defense \u2014 Article 5 says an attack on one is an attack on all. This was meant to scare the Soviet Union: if you attack ANY NATO country, you're fighting ALL of them, including the United States.",diff:"medium"},
+{type:"fib",q:"The U.S. strategy of preventing communism from spreading to new countries was called __________.",answer:["containment","contanment","containmant"],explanation:"Containment was THE big strategy of the entire Cold War. The idea: we can't remove communism where it already exists, but we CAN stop it from spreading further. The Berlin Airlift, Korean War, NATO, and Vietnam War were ALL part of containment.",hint:"It means to keep something from spreading"},
+{type:"fib",q:"During the Berlin Airlift, the pilot who dropped candy to children with tiny parachutes was nicknamed the '__________.'",answer:["candy bomber","candy bombar","candybomber"],explanation:"Lieutenant Gail Halvorsen started dropping candy bars attached to handkerchief parachutes to the children of West Berlin. He became famous as the 'Candy Bomber' and brought hope to a scared city!",hint:"Think about what he dropped and how he delivered it"},
+{type:"tf",q:"The Korean War ended with North and South Korea uniting as one democratic country.",answer:false,explanation:"The war ended in 1953 with an armistice (cease-fire), NOT a peace treaty. Korea is STILL divided today \u2014 North Korea is still communist, and the border between them (the DMZ) is one of the most heavily guarded borders in the world."},
+{type:"tf",q:"The Berlin Airlift delivered supplies for almost a year with planes landing every few minutes.",answer:true,explanation:"Yes! From June 1948 to May 1949, planes landed in West Berlin approximately every 3 minutes, 24 hours a day. They delivered over 2.3 million tons of food, fuel, and supplies to 2 million people!"},
+{type:"match",q:"Match each Cold War action with WHY the U.S. did it:",pairs:[{left:"Berlin Airlift",right:"Feed 2 million people trapped by Soviet blockade"},{left:"Korean War",right:"Stop communist North Korea from conquering South Korea"},{left:"NATO",right:"Create an alliance so the Soviet Union wouldn't attack"},{left:"Containment",right:"Prevent communism from spreading to new countries"}],explanation:"All four of these actions were connected by one big idea: STOP communism from growing. Each one was a different tool \u2014 humanitarian aid, military force, alliance building, and overall strategy."},
+{type:"write",q:"THINK DEEPER: The U.S. used peaceful methods (Berlin Airlift, NATO) AND military force (Korean War) to stop communism. Which approach do you think was more effective, and why?",hints:["What did the Berlin Airlift prove without firing a shot?","What did the Korean War accomplish \u2014 and what was the cost?","Can alliances like NATO prevent wars before they start?","Is there a 'best' approach, or do you need both?"],keyWords:["peaceful","military","effective","airlift","Korean","NATO","war","lives","cost","prevent","alliance","force","diplomacy","both"]},
+{type:"write",q:"Imagine you're a news reporter in 1948 Berlin. Write a short news report about the airlift for Americans back home. Include: what's happening, why, and how Berliners feel.",hints:["Start with the crisis \u2014 why are people trapped?","Describe the planes \u2014 how often do they come?","Interview a local \u2014 what do they say?","Why should Americans care about this?"],keyWords:["blocked","Soviet","planes","food","supplies","hope","freedom","children","survive","grateful","America","democracy"]}
+]},
+{id:"cold-war-people",name:"Cold War People & Events",emoji:"\ud83d\udd75\uFE0F",color:"#9B59B6",questions:[
+{type:"multiple",q:"Why was McCarthyism so dangerous to American democracy, even though McCarthy claimed to be protecting it?",options:["He spent too much government money","He accused people without evidence and destroyed careers, creating a climate of fear where people were afraid to speak freely","He was secretly working with the Soviet Union","He only targeted celebrities, not regular people"],answer:1,explanation:"McCarthyism was dangerous because it attacked the very freedoms it claimed to protect! In a democracy, people should be free to speak and think without fear. McCarthy created a climate where simply being ACCUSED (with no proof) could ruin your entire life.",diff:"hard"},
+{type:"multiple",q:"The Cuban Missile Crisis is often called the closest the world came to nuclear war. What made it MORE dangerous than other Cold War tensions?",options:["Nuclear missiles were placed just 90 miles from the U.S., meaning they could hit American cities within minutes","The Soviet Union had more missiles than the U.S.","Cuba had its own nuclear weapons program","The crisis lasted several years"],answer:0,explanation:"The terrifying thing about the Cuban Missile Crisis was PROXIMITY. With missiles 90 miles from Florida, there would be almost no warning time if they launched. Regular missiles from the Soviet Union took 30+ minutes to reach the U.S. \u2014 from Cuba, it would be just minutes.",diff:"hard"},
+{type:"multiple",q:"Which statement BEST describes why the Vietnam War divided Americans?",options:["Some people wanted to fight in Vietnam and others didn't know where it was","Many people questioned whether the U.S. should be sending young Americans to die fighting in another country's civil war, while others believed stopping communism was worth the cost","Everyone agreed the war was wrong but nobody could stop it","The war was too short to have much impact"],answer:1,explanation:"Vietnam deeply divided America because it forced people to weigh two things: the goal of stopping communism versus the reality of thousands of young Americans dying in a distant war that seemed unwinnable. Families, friends, and communities were torn apart by this debate.",diff:"hard"},
+{type:"fib",q:"Senator __________ accused many Americans of being communists without real evidence, creating a period of fear called McCarthyism.",answer:["mccarthy","joseph mccarthy","macarthy","mccarty"],explanation:"Joseph McCarthy was a U.S. Senator from Wisconsin who claimed to have lists of communists working in the government. Most of his accusations were never proven, but the fear he created ruined hundreds of innocent people's lives.",hint:"His last name became the word for this type of fear-based accusation"},
+{type:"fib",q:"The Cuban Missile Crisis lasted __________ days in October 1962.",answer:["13","thirteen","therteen"],explanation:"Those 13 days (October 16-28, 1962) were the most dangerous period of the entire Cold War. President Kennedy and his advisors barely slept, knowing that one wrong move could trigger nuclear war.",hint:"It's a number between 10 and 15"},
+{type:"fib",q:"__________ was the leader of the Soviet Union who placed nuclear missiles in Cuba.",answer:["khrushchev","nikita khrushchev","krushchev","kruschev","khruschev"],explanation:"Nikita Khrushchev made the risky decision to secretly place missiles in Cuba. When the U.S. discovered them (through spy plane photos), the world held its breath for 13 days.",hint:"He was the Soviet leader from 1958-1964"},
+{type:"tf",q:"Joseph McCarthy's accusations were mostly proven true after investigations.",answer:false,explanation:"Most of McCarthy's accusations were NOT proven. He ruined hundreds of careers based on rumor and fear. Eventually, the Senate censured (officially criticized) him in 1954, and his influence faded. But the damage was already done."},
+{type:"tf",q:"During the Cuban Missile Crisis, the U.S. set up a naval blockade around Cuba to prevent more Soviet weapons from arriving.",answer:true,explanation:"Yes! Kennedy called it a 'quarantine' (avoiding the word 'blockade' because blockades are technically acts of war). U.S. Navy ships surrounded Cuba, and the world waited to see if Soviet ships carrying more missiles would try to break through."},
+{type:"match",q:"Match each person or event to their significance:",pairs:[{left:"Joseph McCarthy",right:"Created climate of fear with unproven accusations of communism"},{left:"Nikita Khrushchev",right:"Soviet leader who placed missiles in Cuba"},{left:"Cuban Missile Crisis",right:"13 days when the world nearly had nuclear war"},{left:"Vietnam War",right:"Long, divisive war to stop communism in Southeast Asia"}],explanation:"Each of these played a major role in the Cold War. McCarthy represented the fear communism caused INSIDE America, while the Cuban Missile Crisis and Vietnam War showed how that fear played out on the world stage."},
+{type:"write",q:"THINK DEEPER: Both McCarthyism and the Cuban Missile Crisis were caused by fear of communism. How were they different? Which do you think was more dangerous to America, and why?",hints:["McCarthyism was a threat from INSIDE America \u2014 Americans hurting other Americans","The Cuban Missile Crisis was a threat from OUTSIDE \u2014 nuclear weapons","Can fear itself be a weapon? How?","What kind of damage does each one cause?"],keyWords:["fear","inside","outside","nuclear","accusations","freedom","speech","missiles","democracy","dangerous","rights","destroy","different","threat"]},
+{type:"write",q:"It's October 1962. You're a kid living in Florida, 90 miles from Cuba. Your parents just told you about the missiles. Write a diary entry about how you feel and what's happening.",hints:["You can almost see Cuba from Florida \u2014 how close is the danger?","What are your parents doing? Are they scared?","What's on TV about it?","What do you hope will happen?"],keyWords:["scared","missiles","Cuba","close","nuclear","hope","family","news","president","Kennedy","war","pray","survive"]}
+]},
+{id:"jim-crow",name:"Jim Crow Laws",emoji:"\u2696\uFE0F",color:"#E67E22",questions:[
+{type:"multiple",q:"Jim Crow laws said facilities should be 'separate but equal.' Why was this a lie in practice?",options:["Black facilities were actually better than white facilities","The facilities were truly equal in every way","Black facilities received far less funding and were almost always inferior in quality","Separate facilities didn't actually exist"],answer:2,explanation:"'Separate but equal' was a legal fiction. In reality, Black schools got old textbooks thrown out by white schools. Black hospitals had outdated equipment. Black neighborhoods got unpaved roads while white neighborhoods got paved ones. The inequality was built into the system.",diff:"hard"},
+{type:"multiple",q:"Which statement BEST explains the deeper purpose of Jim Crow laws beyond just separation?",options:["They were designed to save money by building fewer facilities","They were meant to send a message that Black people were inferior and to maintain white political and economic power","They were temporary laws that everyone knew would end soon","They only affected public transportation"],answer:1,explanation:"Jim Crow wasn't just about keeping people apart \u2014 it was a system designed to maintain white supremacy. By controlling where Black people could go, work, eat, and learn, these laws kept Black Americans from building political power, wealth, and social equality.",diff:"hard"},
+{type:"multiple",q:"Which of these was a way Jim Crow laws prevented Black Americans from gaining political power?",options:["Literacy tests and poll taxes made it nearly impossible for many Black citizens to vote","Black Americans were not allowed to join the military","Black Americans couldn't own any property","Jim Crow laws only affected social situations, not political ones"],answer:0,explanation:"Voting was the KEY to political power, and Jim Crow states knew it. They created impossible literacy tests (even college professors would fail them), expensive poll taxes, and 'grandfather clauses' to block Black citizens from voting while letting poor white citizens vote.",diff:"hard"},
+{type:"fib",q:"The term __________ means keeping people separated based on their race.",answer:["segregation","segregasion","segragation"],explanation:"Segregation was the foundation of Jim Crow. It wasn't just a few separate water fountains \u2014 it was a complete system that separated every aspect of daily life: schools, hospitals, churches, neighborhoods, transportation, entertainment, and even cemeteries.",hint:"It starts with 'seg' and means forced separation"},
+{type:"fib",q:"Jim Crow laws were found mostly in the __________ United States.",answer:["southern","south"],explanation:"While racial discrimination existed everywhere in America, Jim Crow LAWS were primarily in southern states. These were actual state and local laws written into the legal code, backed up by police, courts, and sometimes violent mobs.",hint:"Think about which region of the U.S. had the most slavery before the Civil War"},
+{type:"tf",q:"Jim Crow laws only affected public spaces like buses and restaurants, not important things like education and voting.",answer:false,explanation:"WRONG \u2014 and this is a really important point! Jim Crow affected EVERYTHING, including the two most powerful tools for change: education and voting. By giving Black children worse schools and blocking Black adults from voting, Jim Crow tried to keep inequality permanent."},
+{type:"tf",q:"Some Jim Crow literacy tests were designed to be so confusing that even well-educated people would fail them.",answer:true,explanation:"Yes! These tests were intentionally designed to be unfailable. Questions were vague and confusing, and the white registrar decided if your answer was 'correct.' A white person might get easy questions while a Black person got impossible ones. It was rigged from the start."},
+{type:"match",q:"Match each Jim Crow practice with what it was designed to control:",pairs:[{left:"Segregated schools",right:"Limit Black children's education and opportunities"},{left:"Poll taxes and literacy tests",right:"Block Black citizens from voting and gaining political power"},{left:"Separate facilities (worse quality)",right:"Send a message that Black people were second-class citizens"},{left:"Segregated neighborhoods",right:"Control where Black families could live and build wealth"}],explanation:"Jim Crow was a SYSTEM, not just individual laws. Each piece worked together to control Black Americans' access to education, political power, public dignity, and economic opportunity."},
+{type:"write",q:"THINK DEEPER: Jim Crow laws said things were 'separate but equal.' Explain why separate can NEVER truly be equal. Use specific examples.",hints:["If the government separates one group, what message does that send?","Think about school funding \u2014 who decided how much money each school got?","If you can't vote, can you change unfair laws?","How does being told you're 'less than' affect how you see yourself?"],keyWords:["equal","separate","funding","message","inferior","power","vote","opportunity","unfair","control","dignity","self-worth","resources","impossible"]}
+]},
+{id:"civil-rights",name:"Civil Rights Movement",emoji:"\u270A",color:"#2ECC71",questions:[
+{type:"multiple",q:"Why was Brown v. Board of Education (1954) so important beyond just schools?",options:["It only changed one school in Kansas","It legally said that 'separate but equal' was WRONG, which challenged the entire foundation of Jim Crow","It gave money to Black schools","It was the first Supreme Court case ever"],answer:1,explanation:"Brown v. Board didn't just desegregate schools \u2014 it struck at the HEART of Jim Crow by saying 'separate but equal' is inherently unequal. If segregation was wrong in schools, the same logic applied to everything else. It cracked the legal foundation that Jim Crow stood on.",diff:"hard"},
+{type:"multiple",q:"The Montgomery Bus Boycott lasted 381 days. What made it successful was NOT just Rosa Parks' arrest, but:",options:["The Supreme Court ordered it","The bus company immediately agreed to change","The Black community organized together, sacrificed daily, and economically pressured the bus system until segregation was ruled unconstitutional","White citizens joined the boycott immediately"],answer:2,explanation:"The boycott worked because the Black community ORGANIZED. They walked miles in heat and rain, created carpools, and endured harassment \u2014 for over a year. Since Black riders made up 75% of bus customers, the bus company lost huge amounts of money. Economic pressure + legal challenge = victory.",diff:"hard"},
+{type:"multiple",q:"Which Civil Rights leader became the first African American Supreme Court Justice AND had previously won the Brown v. Board case as a lawyer?",options:["Martin Luther King Jr.","Cesar Chavez","Thurgood Marshall","Lyndon B. Johnson"],answer:2,explanation:"Thurgood Marshall had an incredible career: first he ARGUED the case that ended school segregation, then he became the first Black person to sit on the highest court in the nation. He went from challenging the system from outside to shaping it from inside.",diff:"medium"},
+{type:"multiple",q:"President Lyndon B. Johnson signed the Civil Rights Act even though he knew it would cost his political party support in the South. What does this tell us?",options:["He didn't care about politics","He believed civil rights was more important than political advantage, and was willing to pay a huge political price","Southern voters actually supported the Civil Rights Act","It was an easy decision with no consequences"],answer:1,explanation:"LBJ reportedly said the Democrats would 'lose the South for a generation' by signing the Act \u2014 and he was right. But he pushed it through anyway because he believed it was the right thing to do. This shows that sometimes doing what's right has real costs.",diff:"hard"},
+{type:"multiple",q:"Cesar Chavez and Martin Luther King Jr. had something important in common. What was it?",options:["They both fought for the exact same group of people","They both used nonviolent methods to fight for justice and equality","They both served in Congress","They both lived in Alabama"],answer:1,explanation:"Both leaders believed in NONVIOLENT action. MLK was inspired by Gandhi, and Chavez used strikes, boycotts, marches, and fasting \u2014 never violence. Both proved that organized, peaceful resistance could be more powerful than force.",diff:"medium"},
+{type:"fib",q:"The landmark Supreme Court case __________ v. Board of Education ruled that segregated schools were unconstitutional in 1954.",answer:["brown","browne"],explanation:"The case was named after Oliver Brown, a parent in Topeka, Kansas whose daughter Linda had to walk past a white school to get to her faraway Black school. But the case actually combined FIVE different cases from across the country.",hint:"It's named after the family who filed the lawsuit"},
+{type:"fib",q:"Cesar Chavez fought for the rights of __________, many of whom were Mexican American.",answer:["farmworkers","farm workers","farmworkes"],explanation:"Farmworkers had some of the hardest, most dangerous jobs in America \u2014 working long hours in extreme heat with exposure to pesticides, for very low pay and no benefits. Chavez organized them into the United Farm Workers union and used boycotts to win better conditions.",hint:"They work in fields growing and picking food"},
+{type:"fib",q:"The __________ Rights Act of 1964 made racial discrimination and segregation illegal in public places.",answer:["civil","civl","cival"],explanation:"The Civil Rights Act of 1964 was one of the most important laws in American history. It made it illegal to discriminate based on race, color, religion, sex, or national origin in workplaces, schools, and public facilities.",hint:"The movement fighting for equality was called the _____ Rights Movement"},
+{type:"tf",q:"Martin Luther King Jr.'s strategy of nonviolent protest was considered 'weak' and ineffective by most historians.",answer:false,explanation:"Nonviolent protest was incredibly POWERFUL and effective. By remaining peaceful even when attacked, protesters showed the world the injustice of segregation. TV cameras captured police using violence against peaceful marchers, which shocked the nation and built massive support for civil rights."},
+{type:"tf",q:"The Voting Rights Act of 1965 was needed because even after the Civil Rights Act of 1964, many Black Americans in the South still couldn't vote.",answer:true,explanation:"The Civil Rights Act banned discrimination in public places, but southern states STILL used tricks to prevent Black voting. The Voting Rights Act specifically targeted these voting barriers \u2014 literacy tests, poll taxes, and other schemes \u2014 and sent federal officials to enforce the law."},
+{type:"match",q:"Match each event to its MOST IMPORTANT impact:",pairs:[{left:"Brown v. Board (1954)",right:"Legally destroyed 'separate but equal' \u2014 cracked Jim Crow's foundation"},{left:"Montgomery Bus Boycott (1955)",right:"Showed organized Black communities could win through economic pressure"},{left:"March on Washington (1963)",right:"United 250,000+ people and built national support for civil rights laws"},{left:"Voting Rights Act (1965)",right:"Finally gave Black Americans real access to the ballot box"}],explanation:"Notice how each event built on the last! Brown v. Board cracked the legal foundation (1954), the Boycott showed community power (1955), the March built national support (1963), and the Voting Rights Act secured political power (1965). Each victory made the next one possible."},
+{type:"write",q:"THINK DEEPER: The Civil Rights Movement used many strategies: court cases (Brown v. Board), boycotts (Montgomery), marches (Washington), and laws (Civil Rights Act, Voting Rights Act). Why do you think it took ALL of these approaches, not just one?",hints:["Can a court case alone change people's hearts?","Can a march alone change laws?","Why did they need BOTH legal changes and public pressure?","Think about what each strategy accomplished that the others couldn't"],keyWords:["court","boycott","march","law","different","hearts","minds","pressure","legal","public","together","strategy","change","multiple","combination"]},
+{type:"write",q:"Pick TWO Civil Rights leaders (from: Thurgood Marshall, Rosa Parks, MLK Jr., Cesar Chavez, LBJ). Compare them: how were their methods similar AND different? How did they each contribute to equality?",hints:["What specific actions did each person take?","Marshall worked in courts, Parks and MLK in protests, Chavez with workers, LBJ in politics","How did their different approaches work together?","Could one have succeeded without the others?"],keyWords:["court","protest","boycott","nonviolent","law","rights","equal","different","similar","legal","political","organize","courage","sacrifice"]}
+]},
+{id:"assassinations",name:"Assassinations & Impact",emoji:"\ud83d\udd4a\uFE0F",color:"#1ABC9C",questions:[
+{type:"multiple",q:"All three assassinated leaders \u2014 JFK, MLK Jr., and RFK \u2014 had something important in common. What was it?",options:["They were all presidents","They all represented hope for positive change in America","They all belonged to the same political party","They were all from the same state"],answer:1,explanation:"JFK represented a new generation of leadership, MLK represented racial equality and justice, and RFK represented justice for the poor and marginalized. Each was seen as someone who could make America better. Losing all three in 5 years felt like hope itself was being killed.",diff:"hard"},
+{type:"multiple",q:"The assassinations of these three leaders between 1963-1968 contributed to:",options:["A period of great national happiness","A deep crisis of trust in American institutions and the feeling that violence was destroying progress","The end of all political activism","World War III"],answer:1,explanation:"Losing these three leaders created what many historians call a 'crisis of confidence.' Americans began to wonder: Is change possible if leaders who try to make things better keep getting killed? Can we trust our institutions to protect us? This distrust shaped American politics for decades.",diff:"hard"},
+{type:"multiple",q:"After MLK Jr. was assassinated, riots broke out in over 100 cities. What does this tell us about the impact?",options:["People didn't care about MLK","MLK's death unleashed enormous grief and anger, showing how deeply he mattered to millions of people","The riots were planned in advance","Only a few people were upset"],answer:1,explanation:"The widespread riots showed the depth of grief and frustration. MLK had been the voice calling for PEACEFUL change. When he was killed, many people felt that the possibility of peaceful progress had been killed with him. The rage was a measure of how much he meant.",diff:"hard"},
+{type:"fib",q:"President JFK was assassinated in Dallas, Texas on November 22, __________.",answer:["1963"],explanation:"November 22, 1963 is one of those dates that a whole generation never forgot. People alive that day can still tell you exactly where they were and what they were doing when they heard the news.",hint:"It was in the early 1960s"},
+{type:"fib",q:"Robert F. Kennedy was JFK's __________ and was assassinated in June 1968 while running for president.",answer:["brother","broter","brohter"],explanation:"The Kennedy family suffered incredible tragedy. JFK was killed as president, and then just five years later, his brother Bobby (RFK) was killed while trying to become president himself. The nation mourned the loss of both brothers.",hint:"They were related by family"},
+{type:"tf",q:"The assassinations of JFK, MLK Jr., and RFK all happened within a 5-year period (1963-1968).",answer:true,explanation:"Yes, and this concentrated timeline is part of what made it so devastating. Americans barely had time to grieve one loss before another leader was taken. 1968 was especially brutal \u2014 MLK in April and RFK in June, just two months apart."},
+{type:"tf",q:"After these assassinations, most Americans felt MORE optimistic about the future.",answer:false,explanation:"The opposite happened. Many Americans felt deeply pessimistic and lost trust in the idea that positive change was possible. The late 1960s became a period of social upheaval, protest, and division partly because people felt that the leaders who could have guided the country through change were gone."},
+{type:"match",q:"Match each leader to what they represented to Americans:",pairs:[{left:"JFK",right:"Youthful energy and a new generation of American leadership"},{left:"MLK Jr.",right:"Nonviolent fight for racial equality and justice for all"},{left:"RFK",right:"Justice for the poor and hope for a divided nation"}],explanation:"Each leader carried different but overlapping dreams for America. Together, they represented the hope that America could become more just, more equal, and more unified. Their deaths felt like those dreams were being killed too."},
+{type:"write",q:"THINK DEEPER: Some historians say the assassinations of the 1960s changed America's personality \u2014 from optimistic to cynical. Do you agree? Why might losing these specific leaders cause such a deep change in how a whole country feels?",hints:["Think about what each leader symbolized","What happens when people who represent hope are killed?","How might this affect young people who looked up to them?","Can a country 'lose hope'? What does that look like?"],keyWords:["hope","trust","cynical","optimistic","change","killed","leaders","symbol","grief","anger","lost","generation","faith","future","divided"]}
+]},
+{id:"tv-and-space",name:"TV & Space Exploration",emoji:"\ud83d\ude80",color:"#F39C12",questions:[
+{type:"multiple",q:"Television changed the Civil Rights Movement because:",options:["It helped segregationists explain their viewpoint","It allowed Americans everywhere to SEE the brutality of racism with their own eyes, making it impossible to ignore or deny","It distracted people from the real issues","It was only available in southern states"],answer:1,explanation:"Before TV, northerners could tell themselves segregation 'wasn't that bad.' But when they SAW police dogs attacking children, fire hoses knocking down peaceful marchers, and mobs screaming at Black students \u2014 on their own TV screens, during dinner \u2014 they couldn't look away. Seeing IS different from reading.",diff:"hard"},
+{type:"multiple",q:"Vietnam is called the 'living room war' because:",options:["Most soldiers fought in living rooms","American families watched real combat footage on their TVs at home every single evening","The war was about living conditions in Vietnam","Living rooms were used as military bases"],answer:1,explanation:"For the first time in history, uncensored war footage was broadcast directly into American homes. Families eating dinner would see real soldiers being wounded, villages being destroyed, and body counts announced like sports scores. This graphic reality turned public opinion against the war.",diff:"hard"},
+{type:"multiple",q:"Why was the Space Race about MORE than just science and exploration?",options:["It was actually just about science","Winning the Space Race meant proving to the world that your country's system of government was superior","It was required by the United Nations","Neither country really cared about space"],answer:1,explanation:"The Space Race was a proxy battle in the Cold War. Every achievement said: 'Our system WORKS BETTER than yours.' When the Soviets launched Sputnik first, Americans panicked that communism was winning. When the U.S. reached the Moon, it was a victory for democracy itself.",diff:"hard"},
+{type:"multiple",q:"When the Soviet Union launched Sputnik in 1957, Americans didn't just think 'oh, a satellite.' They panicked because:",options:["They thought it would fall on them","If the Soviets could launch a satellite, they could launch a nuclear missile at the U.S. \u2014 and it meant Soviet technology might be AHEAD of American technology","They didn't know what a satellite was","Sputnik was actually a weapon"],answer:1,explanation:"Sputnik terrified Americans because the same rocket technology that put a satellite in orbit could deliver a nuclear warhead to an American city. It also shattered the assumption that American technology was the best in the world. This led to a massive increase in science education and the creation of NASA.",diff:"hard"},
+{type:"fib",q:"The Soviet satellite __________, launched in 1957, was the first human-made object in space.",answer:["sputnik","sputnick","spunik"],explanation:"Sputnik was about the size of a beach ball and did nothing but beep. But that beep changed the world \u2014 it kicked off the Space Race, led to the creation of NASA, and transformed how Americans thought about science education.",hint:"It's a Russian word that means 'traveling companion'"},
+{type:"fib",q:"On July 20, 1969, astronaut __________ became the first person to walk on the Moon.",answer:["neil armstrong","armstrong","neil armstong","niel armstrong"],explanation:"Neil Armstrong's first step on the Moon was watched by about 600 million people \u2014 the largest TV audience in history at that time. His words 'one small step for man, one giant leap for mankind' became one of the most famous quotes ever.",hint:"His last name is a strong body part"},
+{type:"tf",q:"Television coverage of the Vietnam War INCREASED public support for the war.",answer:false,explanation:"The opposite! Seeing the reality of war \u2014 wounded soldiers, burning villages, grieving families \u2014 turned millions of Americans AGAINST the war. Before TV, governments could control the narrative about war. Television took that control away."},
+{type:"tf",q:"The Moon landing in 1969 was watched by approximately 600 million people worldwide.",answer:true,explanation:"About 600 million people (roughly 1 in 5 humans alive at the time) watched Neil Armstrong step onto the Moon. It was a rare moment when the whole world was united in wonder, regardless of Cold War politics."},
+{type:"match",q:"Match each technology moment to its impact on American society:",pairs:[{left:"TV shows Civil Rights violence",right:"Shocked the nation and built massive support for ending segregation"},{left:"TV shows Vietnam War nightly",right:"Turned public opinion against the war"},{left:"Sputnik launches (1957)",right:"Panicked America into investing in science education and NASA"},{left:"Moon landing on live TV (1969)",right:"United the world in wonder and proved American achievement"}],explanation:"Notice the pattern: television's power was showing people REALITY. When that reality was injustice (Civil Rights) or war (Vietnam), people demanded change. When it was triumph (Moon landing), people felt united. The camera became one of the most powerful tools of the 20th century."},
+{type:"write",q:"THINK DEEPER: Television made people SEE things they could have ignored before \u2014 both terrible things (racism, war) and amazing things (Moon landing). Do you think television did more GOOD or more HARM for America in the 1950s-1970s? Defend your answer with specific examples.",hints:["Good: it exposed injustice and built support for civil rights","Good: it united the world during the Moon landing","Challenging: it showed graphic war footage that was hard to watch","Think about: is knowing the truth always better, even when it's painful?"],keyWords:["truth","see","ignore","civil rights","Vietnam","Moon","good","harm","exposed","injustice","united","painful","important","reality","informed","change"]},
+{type:"write",q:"It's July 20, 1969. You and your family are watching the Moon landing on TV. Describe the scene: what are you seeing, hearing, feeling? Why is this moment so important beyond just science?",hints:["What does it look like on the small, grainy TV screen?","How is your family reacting? Neighbors?","Think about the Cold War \u2014 what does this mean for America vs. the Soviet Union?","Armstrong's words: 'one small step for man, one giant leap for mankind'"],keyWords:["TV","watching","Moon","Armstrong","family","amazed","proud","history","Cold War","Soviet","step","mankind","achievement","together","world"]}
+]}
+];
+
+var MATH_TOPICS=[
+{
+  id:"fractions-basics",name:"What ARE Fractions?",emoji:"\ud83c\udf55",color:"#FF6B6B",
+  desc:"Start here! Learn what fractions mean using pizza, bars, and number lines.",
+  lessons:[
+    {type:"teach",title:"Let's Start with Pizza! \ud83c\udf55",content:'<div class="lesson-text">Imagine you have a pizza cut into <strong>4 equal slices</strong>. You eat <strong>1 slice</strong>. How much did you eat?</div><div class="frac-visual"><div class="frac-piece filled">\ud83c\udf55</div><div class="frac-piece empty"></div><div class="frac-piece empty"></div><div class="frac-piece empty"></div></div><div class="lesson-text">You ate <strong>1 out of 4</strong> slices. In math, we write this as a <strong>fraction</strong>:</div><div class="step-math">\u00bc</div><div class="step-box blue"><div class="step-text"><span class="step-num">!</span> A fraction has TWO numbers:<br><br>\u2022 The <strong>TOP number</strong> (numerator) = how many pieces you HAVE<br>\u2022 The <strong>BOTTOM number</strong> (denominator) = how many TOTAL equal pieces</div></div><div class="encourage">\ud83c\udf1f A fraction just means "part of a whole." That\'s it! You already understand fractions if you\'ve ever shared food!</div>'},
+    {type:"teach",title:"Let's See More Examples",content:'<div class="lesson-text">If you eat <strong>3 out of 4</strong> slices:</div><div class="frac-visual"><div class="frac-piece filled">\ud83c\udf55</div><div class="frac-piece filled">\ud83c\udf55</div><div class="frac-piece filled">\ud83c\udf55</div><div class="frac-piece empty"></div></div><div class="step-math">\u00be</div><div class="lesson-text">If a chocolate bar has <strong>8 pieces</strong> and you eat <strong>5</strong>:</div><div class="frac-visual"><div class="frac-piece filled">\ud83c\udf6b</div><div class="frac-piece filled">\ud83c\udf6b</div><div class="frac-piece filled">\ud83c\udf6b</div><div class="frac-piece filled">\ud83c\udf6b</div><div class="frac-piece filled">\ud83c\udf6b</div><div class="frac-piece empty"></div><div class="frac-piece empty"></div><div class="frac-piece empty"></div></div><div class="step-math">\u2075\u2044\u2088</div><div class="step-box green"><div class="step-text"><span class="step-num">\u2713</span> <strong>Numerator</strong> (top) = 5 pieces you ate<br><strong>Denominator</strong> (bottom) = 8 total pieces</div></div>'},
+    {type:"mc",q:"A cookie is cut into 6 equal pieces. You eat 2. What fraction did you eat?",options:["2/6","6/2","2/8","6/6"],answer:0,explanation:"You ate 2 pieces out of 6 total \u2014 that's 2/6! The top number (2) is how many you ate, the bottom (6) is the total pieces."},
+    {type:"mc",q:"In the fraction 3/5, what does the 5 mean?",options:["You have 5 pieces","There are 5 total equal pieces","You ate 5 pieces","There are 5 fractions"],answer:1,explanation:"The bottom number (denominator) tells you the TOTAL number of equal pieces. So 5 means the whole thing was cut into 5 equal parts."},
+    {type:"mc",q:"In the fraction 3/5, what does the 3 mean?",options:["There are 3 total pieces","Each piece has 3 parts","You have 3 out of the 5 pieces","You need 3 more pieces"],answer:2,explanation:"The top number (numerator) is how many pieces you HAVE or are talking about. 3/5 means you have 3 out of 5 pieces."},
+    {type:"mc",q:"Which fraction shows this picture?\n\ud83d\udfe5\ud83d\udfe5\ud83d\udfe5\u2b1c\u2b1c",options:["2/5","5/3","3/5","3/2"],answer:2,explanation:"3 red squares out of 5 total = 3/5! Remember: top = colored pieces (3), bottom = total pieces (5)."},
+    {type:"mc",q:"A cake is cut into 10 pieces. Nobody has eaten any yet. What fraction is LEFT?",options:["0/10","10/10","10/0","1/10"],answer:1,explanation:"All 10 pieces out of 10 are still there \u2014 that's 10/10, which equals a WHOLE cake! When the top and bottom are the same number, it equals 1 whole."},
+    {type:"mc",q:"Which of these is NOT a fraction?",options:["1/2","3/4","7","5/8"],answer:2,explanation:"7 is a whole number, not a fraction. Fractions always have a top number, a line, and a bottom number to show parts of a whole."},
+    {type:"teach",title:"You're Doing Great! \ud83c\udf1f",content:'<div class="encourage">\ud83c\udf89 You now understand what fractions ARE! That\'s the most important step. Everything else in fractions builds on this.<br><br>Remember: a fraction is just a way to describe PART of something.<br><br>\u2022 Top number (numerator) = pieces you have<br>\u2022 Bottom number (denominator) = total pieces</div>'}
+  ]
+},
+{
+  id:"equivalent-fractions",name:"Equivalent Fractions",emoji:"\ud83c\udf6b",color:"#7C4DFF",
+  desc:"Learn why 1/2 and 2/4 are the same amount \u2014 just cut differently!",
+  lessons:[
+    {type:"teach",title:"Same Amount, Different Numbers",content:'<div class="lesson-text">Look at these two chocolate bars. They\'re the <strong>same size</strong>:</div><div class="bar-model"><div class="bar-seg on" style="flex:1">1</div><div class="bar-seg off" style="flex:1">2</div></div><div style="text-align:center;font-weight:800;margin:4px 0">\u00bd (1 out of 2)</div><div class="bar-model"><div class="bar-seg on" style="flex:1">1</div><div class="bar-seg on" style="flex:1">2</div><div class="bar-seg off" style="flex:1">3</div><div class="bar-seg off" style="flex:1">4</div></div><div style="text-align:center;font-weight:800;margin:4px 0">\u00be? No! 2/4 (2 out of 4)</div><div class="lesson-text">See? <strong>\u00bd and 2/4 are the SAME amount</strong> of chocolate! We just cut the second bar into smaller pieces. These are called <strong>equivalent fractions</strong>.</div><div class="step-box"><div class="step-text"><span class="step-num">!</span> <strong>Equivalent fractions</strong> = different numbers, same amount. It\'s like saying "half a dollar" and "50 cents" \u2014 same money, different words!</div></div>'},
+    {type:"teach",title:"The Secret Trick \ud83c\udf1f",content:'<div class="lesson-text">Here\'s the trick to make equivalent fractions:</div><div class="step-box blue"><div class="step-text"><span class="step-num">1</span> <strong>Multiply the top AND bottom by the SAME number.</strong><br><br>Start with \u00bd. Multiply top and bottom by 2:<br></div><div class="step-math">1\u00d72 = 2<br>2\u00d72 = 4</div><div class="step-text">So \u00bd = 2/4 \u2705</div></div><div class="step-box green"><div class="step-text"><span class="step-num">2</span> Try it again! Multiply \u00bd by 3:<br></div><div class="step-math">1\u00d73 = 3<br>2\u00d73 = 6</div><div class="step-text">So \u00bd = 3/6 \u2705</div></div><div class="lesson-text">It works because you\'re not changing the AMOUNT \u2014 you\'re just cutting it into more pieces!</div><div class="encourage">\ud83d\udca1 Think of it like this: if you cut every slice of pizza in half, you have MORE slices but the SAME amount of pizza!</div>'},
+    {type:"mc",q:"Which fraction is equivalent to 1/3?",options:["2/6","2/3","1/6","3/6"],answer:0,explanation:"1/3 = 2/6. We multiplied both top and bottom by 2: (1\u00d72)/(3\u00d72) = 2/6. Same amount, more pieces!"},
+    {type:"mc",q:"Which fraction is equivalent to 2/4?",options:["2/8","4/2","1/2","3/4"],answer:2,explanation:"2/4 = 1/2. We can divide both top and bottom by 2: (2\u00f72)/(4\u00f72) = 1/2. This is called simplifying!"},
+    {type:"mc",q:"To find a fraction equivalent to 3/5, what should you do?",options:["Add the same number to top and bottom","Multiply top and bottom by the same number","Switch the top and bottom numbers","Subtract 1 from the bottom number"],answer:1,explanation:"Always multiply (or divide) both the top AND bottom by the SAME number. This keeps the fraction equal to the same amount."},
+    {type:"mc",q:"What is 2/3 equivalent to if we multiply top and bottom by 4?",options:["8/12","6/7","2/12","8/3"],answer:0,explanation:"(2\u00d74)/(3\u00d74) = 8/12. Both numbers got multiplied by 4, so 2/3 = 8/12!"},
+    {type:"mc",q:"Are 3/4 and 6/8 equivalent fractions?",options:["Yes \u2014 multiply 3/4 by 2/2 to get 6/8","No \u2014 they look completely different","Yes \u2014 because 3+3=6 and 4+4=8","No \u2014 8 is too big a number"],answer:0,explanation:"Yes! (3\u00d72)/(4\u00d72) = 6/8. Both top and bottom were multiplied by 2. Same amount of pizza, just smaller slices!"},
+    {type:"mc",q:"Which pair are NOT equivalent fractions?",options:["1/2 and 3/6","2/5 and 4/10","1/3 and 2/5","3/4 and 6/8"],answer:2,explanation:"1/3 and 2/5 are NOT equivalent. If we multiply 1/3 by 2, we get 2/6, not 2/5. The bottom numbers don't match up."},
+    {type:"teach",title:"Awesome work! \ud83c\udfc6",content:'<div class="encourage">\ud83c\udf89 You now know equivalent fractions! The big rule:<br><br>\ud83d\udd11 <strong>Multiply or divide the top AND bottom by the SAME number</strong> to get an equivalent fraction.<br><br>This is one of the most useful fraction skills you\'ll ever learn!</div>'}
+  ]
+},
+{
+  id:"comparing-fractions",name:"Comparing Fractions",emoji:"\u2696\uFE0F",color:"#FF9800",
+  desc:"Learn to tell which fraction is bigger using benchmarks like 0, \u00bd, and 1.",
+  lessons:[
+    {type:"teach",title:"Using Benchmarks to Compare",content:'<div class="lesson-text">A <strong>benchmark</strong> is a number you already know well that helps you estimate. For fractions, our three best benchmarks are:</div><div style="display:flex;gap:8px;justify-content:center;margin:14px 0"><div class="step-box blue" style="flex:1;text-align:center;margin:0"><div class="step-math">0</div><div class="step-text" style="font-size:12px">Close to nothing</div></div><div class="step-box" style="flex:1;text-align:center;margin:0"><div class="step-math">\u00bd</div><div class="step-text" style="font-size:12px">Right in the middle</div></div><div class="step-box green" style="flex:1;text-align:center;margin:0"><div class="step-math">1</div><div class="step-text" style="font-size:12px">Close to a whole</div></div></div><div class="lesson-text"><strong>How to tell where a fraction falls:</strong></div><div class="step-box orange"><div class="step-text"><span class="step-num">?</span> Is the top number <strong>much smaller</strong> than the bottom? \u2192 Close to <strong>0</strong><br>(Example: 1/8 \u2014 just 1 tiny piece out of 8)<br><br>Is the top number about <strong>HALF</strong> the bottom? \u2192 Close to <strong>\u00bd</strong><br>(Example: 3/6 \u2014 3 is half of 6)<br><br>Is the top number <strong>almost equal</strong> to the bottom? \u2192 Close to <strong>1</strong><br>(Example: 7/8 \u2014 only 1 piece missing!)</div></div>'},
+    {type:"teach",title:"Comparing Two Fractions",content:'<div class="lesson-text"><strong>Example:</strong> Which is bigger, 3/8 or 5/6?</div><div class="step-box blue"><div class="step-text"><span class="step-num">1</span> Where is 3/8?<br>3 is less than half of 8 (which is 4), so 3/8 is <strong>a little less than \u00bd</strong></div></div><div class="step-box green"><div class="step-text"><span class="step-num">2</span> Where is 5/6?<br>5 is almost equal to 6, so 5/6 is <strong>close to 1</strong></div></div><div class="step-box"><div class="step-text"><span class="step-num">3</span> Compare!<br><strong>5/6 is bigger</strong> because it\'s close to 1, while 3/8 is less than \u00bd</div><div class="step-math">3/8 &lt; 5/6</div></div><div class="encourage">\ud83d\udca1 You don\'t always need fancy math to compare fractions. Just ask yourself: "Is this closer to 0, \u00bd, or 1?"</div>'},
+    {type:"mc",q:"Is 1/8 closer to 0, 1/2, or 1?",options:["Closer to 0 \u2014 it's a tiny piece","Closer to 1/2 \u2014 it's in the middle","Closer to 1 \u2014 it's almost a whole","Exactly equal to 1/2 in value"],answer:0,explanation:"1/8 is very close to 0. Think about it: if a pizza has 8 slices and you only have 1 tiny slice, that's barely anything!"},
+    {type:"mc",q:"Is 7/8 closer to 0, 1/2, or 1?",options:["Closer to 0 \u2014 it's a tiny piece","Closer to 1/2 \u2014 it's in the middle","Closer to 1 \u2014 almost a whole thing","Exactly equal to 1/2 in value"],answer:2,explanation:"7/8 is very close to 1. Only 1 piece out of 8 is missing \u2014 you have almost the entire thing!"},
+    {type:"mc",q:"Which fraction is BIGGER: 2/5 or 7/8?",options:["2/5 is bigger because 5 is a smaller number on the bottom","7/8 is bigger because it's close to 1 while 2/5 is less than 1/2","They are exactly the same amount of stuff","2/5 is bigger because 2 and 5 are closer together as numbers"],answer:1,explanation:"7/8 is close to 1 (only 1 piece missing), while 2/5 is less than 1/2 (2 is less than half of 5). So 7/8 is definitely bigger!"},
+    {type:"mc",q:"Which fraction is SMALLER: 5/6 or 1/4?",options:["5/6 is smaller because 6 is bigger than 4 as a bottom number","1/4 is smaller because it's close to 0 while 5/6 is close to 1","They are exactly the same amount of stuff","5/6 is smaller because 5 is a bigger top number than 1 is"],answer:1,explanation:"1/4 is close to 0 (small piece), while 5/6 is close to 1 (almost the whole thing). So 1/4 is much smaller!"},
+    {type:"mc",q:"Put these in order from SMALLEST to BIGGEST: 7/8, 1/10, 4/7",options:["1/10, 4/7, 7/8","7/8, 4/7, 1/10","4/7, 1/10, 7/8","1/10, 7/8, 4/7"],answer:0,explanation:"1/10 is close to 0 (tiny!), 4/7 is close to 1/2 (4 is a bit more than half of 7), and 7/8 is close to 1 (almost everything). So: 1/10, 4/7, 7/8!"},
+    {type:"teach",title:"You nailed it! \ud83c\udf89",content:'<div class="encourage">\ud83c\udfc6 You can now compare fractions using benchmarks!<br><br>\ud83d\udd11 The trick: figure out if each fraction is close to <strong>0</strong>, <strong>\u00bd</strong>, or <strong>1</strong>, then compare those positions.<br><br>This is exactly how adults estimate fractions in real life!</div>'}
+  ]
+},
+{
+  id:"multiply-fraction-whole",name:"Multiply Fraction \u00d7 Whole Number",emoji:"\u2716\uFE0F",color:"#2196F3",
+  desc:"What does 3 \u00d7 \u00bc actually mean? It's easier than you think!",
+  lessons:[
+    {type:"teach",title:"What Does It Actually Mean?",content:'<div class="lesson-text">When you see <strong>3 \u00d7 \u00bc</strong>, it just means:</div><div class="step-math">\u00bc + \u00bc + \u00bc</div><div class="lesson-text">That\'s it! Three groups of one-quarter.</div><div class="frac-visual"><div class="frac-piece filled">\u00bc</div><div class="frac-piece filled">\u00bc</div><div class="frac-piece filled">\u00bc</div></div><div class="step-box blue"><div class="step-text"><span class="step-num">!</span> <strong>Multiplying by a whole number</strong> just means adding that fraction that many times!<br><br>3 \u00d7 \u00bc = \u00bc + \u00bc + \u00bc = <strong>\u00be</strong></div></div><div class="encourage">\ud83d\udca1 Think of it like this: if you eat \u00bc of a pizza on 3 different days, how much total pizza did you eat? \u00be of a pizza!</div>'},
+    {type:"teach",title:"The Shortcut \u2728",content:'<div class="lesson-text">You don\'t need to add over and over. There\'s a shortcut:</div><div class="step-box green"><div class="step-text"><span class="step-num">1</span> <strong>Multiply the whole number \u00d7 the top number (numerator)</strong></div><div class="step-math">3 \u00d7 \u00bc \u2192 3 \u00d7 1 = 3</div></div><div class="step-box blue"><div class="step-text"><span class="step-num">2</span> <strong>Keep the bottom number (denominator) the same</strong></div><div class="step-math">Bottom stays 4</div></div><div class="step-box"><div class="step-text"><span class="step-num">3</span> <strong>Your answer is:</strong></div><div class="step-math">3 \u00d7 \u00bc = \u00be</div></div><div class="lesson-text"><strong>Another example:</strong> 5 \u00d7 2/3</div><div class="step-box orange"><div class="step-text">Multiply 5 \u00d7 2 = 10 (new top number)<br>Bottom stays 3<br><strong>Answer: 10/3</strong></div></div><div class="encourage">\ud83c\udf1f Remember: multiply the top, keep the bottom. That\'s the whole trick!</div>'},
+    {type:"mc",q:"What does 4 \u00d7 1/5 mean?",options:["1/5 + 1/5 + 1/5 + 1/5 (adding 1/5 four separate times together)","4 divided by 5 into separate even groups of numbers","1/5 minus 4 from the top number to make it smaller","4 + 1/5 added together to make one single new number"],answer:0,explanation:"4 \u00d7 1/5 means four groups of 1/5, or adding 1/5 four times: 1/5 + 1/5 + 1/5 + 1/5 = 4/5"},
+    {type:"mc",q:"What is 3 \u00d7 2/5?",options:["6/15","6/5","5/5","2/15"],answer:1,explanation:"Multiply the top: 3 \u00d7 2 = 6. Keep the bottom: 5. Answer: 6/5! (That's more than 1 whole, which is fine!)"},
+    {type:"mc",q:"What is 4 \u00d7 1/3?",options:["4/12","1/12","4/3","5/3"],answer:2,explanation:"Multiply the top: 4 \u00d7 1 = 4. Keep the bottom: 3. Answer: 4/3!"},
+    {type:"mc",q:"What is 2 \u00d7 3/7?",options:["6/7","6/14","5/7","3/14"],answer:0,explanation:"Multiply the top: 2 \u00d7 3 = 6. Keep the bottom: 7. Answer: 6/7!"},
+    {type:"mc",q:"What is 6 \u00d7 1/4?",options:["6/24","1/24","6/4","7/4"],answer:2,explanation:"Multiply the top: 6 \u00d7 1 = 6. Keep the bottom: 4. Answer: 6/4! (This equals 1 and 2/4, or 1\u00bd)"},
+    {type:"mc",q:"A recipe needs 1/3 cup of sugar. You're making 5 batches. How much sugar total?",options:["5/15 cups of sugar","5/3 cups of sugar","1/15 cups of sugar","5/8 cups of sugar"],answer:1,explanation:"5 \u00d7 1/3: multiply top 5\u00d71=5, keep bottom 3. You need 5/3 cups (that's 1 and 2/3 cups)!"},
+    {type:"teach",title:"You've Got This! \ud83d\udcaa",content:'<div class="encourage">\ud83c\udf89 You can multiply fractions by whole numbers! The rule is super simple:<br><br>\ud83d\udd11 <strong>Multiply the top number \u00d7 the whole number. Keep the bottom number the same.</strong><br><br>That\'s all there is to it!</div>'}
+  ]
+},
+{
+  id:"long-division",name:"Dividing Big Numbers",emoji:"\u2797",color:"#4CAF50",
+  desc:"Step-by-step long division with three-digit numbers. We'll go slow!",
+  lessons:[
+    {type:"teach",title:"Division = Sharing Equally",content:'<div class="lesson-text">Division is just <strong>sharing equally</strong>. If you have 156 stickers and 3 friends, how many does each friend get?</div><div class="step-math">156 \u00f7 3 = ?</div><div class="lesson-text">Long division is a way to solve this <strong>one step at a time</strong>. Think of it as sharing stickers one group at a time.</div><div class="step-box blue"><div class="step-text"><span class="step-num">!</span> The steps of long division spell <strong>DMSB</strong>:<br><br>\ud83d\udcd6 <strong>D</strong>ivide<br>\u2716 <strong>M</strong>ultiply<br>\u2796 <strong>S</strong>ubtract<br>\u2b07\uFE0F <strong>B</strong>ring down<br><br>Then repeat!</div></div><div class="encourage">\ud83d\udca1 Don\'t try to do it all at once! Just follow DMSB one step at a time, like following a recipe.</div>'},
+    {type:"teach",title:"Let's Solve 156 \u00f7 3 Step by Step",content:'<div class="lesson-text"><strong>How many times does 3 go into 1?</strong> Zero times (1 is too small). So look at the first TWO digits: 15.</div><div class="step-box green"><div class="step-text"><span class="step-num">D</span> <strong>Divide:</strong> 3 goes into 15 how many times? <strong>5 times!</strong> (because 3\u00d75=15)</div></div><div class="step-box blue"><div class="step-text"><span class="step-num">M</span> <strong>Multiply:</strong> 5 \u00d7 3 = 15</div></div><div class="step-box"><div class="step-text"><span class="step-num">S</span> <strong>Subtract:</strong> 15 - 15 = 0</div></div><div class="step-box orange"><div class="step-text"><span class="step-num">B</span> <strong>Bring down</strong> the 6. Now we have 06 (which is just 6).</div></div><div class="lesson-text"><strong>Repeat DMSB:</strong></div><div class="step-box green"><div class="step-text"><span class="step-num">D</span> 3 goes into 6 how many times? <strong>2 times!</strong></div></div><div class="step-box blue"><div class="step-text"><span class="step-num">M</span> 2 \u00d7 3 = 6. <span class="step-num">S</span> 6 - 6 = 0.</div></div><div class="step-math">156 \u00f7 3 = 52 \u2705</div><div class="encourage">\ud83c\udf89 Each friend gets 52 stickers! You just did long division!</div>'},
+    {type:"mc",q:"What is the first step of long division?",options:["Divide \u2014 how many times does the divisor go into the first digits?","Multiply \u2014 multiply all the numbers in the problem together first","Subtract \u2014 take away the small number from the larger number first","Bring down \u2014 move every digit down to a lower line on your paper"],answer:0,explanation:"D is for DIVIDE! First, ask yourself how many times the divisor fits into the first digit(s). Then you Multiply, Subtract, and Bring down."},
+    {type:"mc",q:"What is 248 \u00f7 4?",options:["62","52","72","42"],answer:0,explanation:"4 goes into 24 six times (24\u00f74=6). Bring down the 8. 4 goes into 8 two times (8\u00f74=2). Answer: 62!"},
+    {type:"mc",q:"What is 369 \u00f7 3?",options:["113","123","133","103"],answer:1,explanation:"3 into 3 = 1. 3 into 6 = 2. 3 into 9 = 3. Answer: 123!"},
+    {type:"mc",q:"What is 156 \u00f7 6?",options:["36","16","26","21"],answer:2,explanation:"6 goes into 15 two times (6\u00d72=12). Subtract: 15-12=3. Bring down 6: 36. 6 goes into 36 six times. Answer: 26!"},
+    {type:"mc",q:"What is 432 \u00f7 8?",options:["52","54","48","56"],answer:1,explanation:"8 goes into 43 five times (8\u00d75=40). 43-40=3. Bring down 2: 32. 8 goes into 32 four times. Answer: 54!"},
+    {type:"mc",q:"What is 725 \u00f7 5?",options:["135","145","155","125"],answer:1,explanation:"5 into 7 = 1 remainder 2. Bring down 2: 22. 5 into 22 = 4 remainder 2. Bring down 5: 25. 5 into 25 = 5. Answer: 145!"},
+    {type:"teach",title:"You're a Division Pro! \ud83c\udfc6",content:'<div class="encourage">\ud83c\udf89 Long division isn\'t scary when you take it <strong>one step at a time</strong>!<br><br>\ud83d\udd11 Remember <strong>DMSB</strong>:<br>Divide \u2192 Multiply \u2192 Subtract \u2192 Bring Down<br>Then repeat until you\'re done!<br><br>The more you practice, the faster you\'ll get. You\'ve totally got this! \ud83d\udcaa</div>'}
+  ]
+}
+];
+
+
+/* ===== STATE ===== */
+var state = {
+  subject: null, // null=picker, 'ss', 'math'
+  screen: 'home', tab: 'topics',
+  // SS state
+  topic:null, qi:0, sel:null, showed:false,
+  score:0, total:0, writeVal:'', writeDone:false, writeFB:null,
+  streak:0, bestStreak:0, answers:[],
+  matchSels:{}, matchChecked:false,
+  fibVal:'', fibVal2:'', fibDone:false, fibFB:null,
+  // Math state
+  step:0,
+  // Persistent
+  ss_scores:{}, math_scores:{}, history:[]
+};
+
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate();}
+function loadData(){try{var s=localStorage.getItem('sb_all_v1');if(s){var d=JSON.parse(s);state.ss_scores=d.ss||{};state.math_scores=d.math||{};state.bestStreak=d.streak||0;state.history=d.history||[];}}catch(e){}}
+function saveData(){try{localStorage.setItem('sb_all_v1',JSON.stringify({ss:state.ss_scores,math:state.math_scores,streak:state.bestStreak,history:state.history}));}catch(e){}}
+function logDay(){var t=todayStr();if(state.history.indexOf(t)===-1){state.history.push(t);saveData();}}
+loadData();
+
+function el(id){return document.getElementById(id);}
+function qs(s){return document.querySelectorAll(s);}
+function pR(p,sz,c){var r=(sz-6)/2,ci=2*Math.PI*r,o=ci-(p/100)*ci;return '<svg width="'+sz+'" height="'+sz+'" style="transform:rotate(-90deg);display:block"><circle cx="'+sz/2+'" cy="'+sz/2+'" r="'+r+'" fill="none" stroke="#e0e0e0" stroke-width="5"/><circle cx="'+sz/2+'" cy="'+sz/2+'" r="'+r+'" fill="none" stroke="'+c+'" stroke-width="5" stroke-dasharray="'+ci+'" stroke-dashoffset="'+o+'" stroke-linecap="round" style="transition:stroke-dashoffset .6s ease"/></svg>';}
+function confHTML(){var cols=['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE'];var h='<div class="confetti">';for(var i=0;i<35;i++){h+='<div class="confp" style="left:'+Math.random()*100+'%;background:'+cols[i%7]+';border-radius:'+(Math.random()>.5?'50%':'2px')+';animation:confettiFall '+(2+Math.random()*3)+'s linear '+Math.random()*2+'s forwards"></div>';}return h+'</div>';}
+
+function setTheme(t){document.body.className=t+'-theme';}
+
+/* ===== RENDER ===== */
+function render(){
+  var a=el('app');
+  if(!state.subject){setTheme('home');a.innerHTML=renderPicker();}
+  else if(state.subject==='ss'){
+    setTheme('ss');
+    if(state.screen==='home') a.innerHTML=renderSSHome();
+    else if(state.screen==='quiz') a.innerHTML=renderSSQuiz();
+    else if(state.screen==='results') a.innerHTML=renderSSResults();
+  }
+  else if(state.subject==='math'){
+    setTheme('math');
+    if(state.screen==='home') a.innerHTML=renderMathHome();
+    else if(state.screen==='lesson') a.innerHTML=renderMathLesson();
+    else if(state.screen==='results') a.innerHTML=renderMathResults();
+  }
+  bind();
+}
+
+/* ===== SUBJECT PICKER ===== */
+function renderPicker(){
+  var totalDays=state.history.length;
+  var streak=totalDays>0?'<div style="text-align:center;font-size:13px;font-weight:700;color:rgba(0,0,0,.4);margin-bottom:16px">\ud83d\udcc5 '+totalDays+' days studied'+(state.bestStreak>1?' \u00b7 \ud83d\udd25 Best streak: '+state.bestStreak:'')+'</div>':'';
+  return '<div class="hdr"><h1>\ud83d\udcda Study Buddy</h1><p>Choose a subject to start learning!</p></div>'+streak+'<div class="subj-grid"><div class="subj-card" id="pick-ss"><div class="icon">\ud83c\udf0e</div><div class="name">Social Studies</div><div class="desc">Cold War, Civil Rights & more</div></div><div class="subj-card" id="pick-math"><div class="icon">\ud83e\udde0</div><div class="name">Math</div><div class="desc">Fractions, division & more</div></div></div><div class="ftr">Scores saved automatically \u2764\uFE0F</div>';
+}
+
+/* ===== SOCIAL STUDIES ===== */
+function renderSSHome(){
+  var tabs='<div class="tabs"><button class="tab'+(state.tab==='topics'?' on':'')+'" data-tab="topics">\ud83d\udcda Topics</button><button class="tab'+(state.tab==='progress'?' on':'')+'" data-tab="progress">\ud83d\udcc8 Progress</button></div>';
+  var c='';
+  if(state.tab==='topics'){
+    c='<div class="intro">Pick a topic! Harder questions, fill-in-blank, matching & deep thinking. \ud83c\udfaf</div>';
+    SS_TOPICS.forEach(function(t,i){
+      var b=state.ss_scores[t.id],mc=0,tf=0,wr=0,fi=0,ma=0;
+      t.questions.forEach(function(q){if(q.type==='multiple')mc++;else if(q.type==='tf')tf++;else if(q.type==='write')wr++;else if(q.type==='fib')fi++;else if(q.type==='match')ma++;});
+      var ring=b!==undefined?'<div class="pr">'+pR(b,42,t.color)+'<div class="prt" style="color:'+t.color+'">'+b+'%</div></div>':'';
+      c+='<div class="card tc" data-ti="'+i+'" style="border-left:5px solid '+t.color+';animation:slideUp .4s ease '+(i*.06)+'s both"><div class="ti" style="background:'+t.color+'18">'+t.emoji+'</div><div style="flex:1;min-width:0"><div class="tn">'+t.name+'</div><div class="tm">'+t.questions.length+'q \u00b7 '+mc+' quiz \u00b7 '+tf+' T/F \u00b7 '+fi+' fill \u00b7 '+ma+' match \u00b7 '+wr+' write</div></div>'+ring+'<div style="font-size:18px;color:#ccc;flex-shrink:0">\u2192</div></div>';});
+  } else {
+    c+=renderCalendar()+renderSSScores();
+  }
+  return '<div class="hdr"><h1>\ud83c\udf0e Social Studies</h1><p>5th Grade \u2728</p></div><button class="bk" id="backSubj" style="margin-bottom:12px">\u2190 All Subjects</button>'+tabs+c+'<div class="ftr">Scores saved \u2764\uFE0F</div>';
+}
+
+function renderCalendar(){
+  var n=new Date(),y=n.getFullYear(),m=n.getMonth(),td=n.getDate(),fd=new Date(y,m,1).getDay(),dm=new Date(y,m+1,0).getDate();
+  var mn=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var c='<div class="strow" style="animation:slideUp .3s ease"><div class="stcard"><div class="stnum" style="color:#FF6B6B">'+state.history.length+'</div><div class="stlbl">Days Studied</div></div><div class="stcard"><div class="stnum" style="color:#7C4DFF">'+(state.bestStreak||0)+'</div><div class="stlbl">\ud83d\udd25 Streak</div></div></div>';
+  c+='<div class="calcard"><div class="calt">\ud83d\udcc5 '+mn[m]+' '+y+'</div><div class="cals">Green = days you studied!</div><div class="calg">';
+  ['S','M','T','W','T','F','S'].forEach(function(d){c+='<div class="calh">'+d+'</div>';});
+  for(var e=0;e<fd;e++)c+='<div class="cald emp"></div>';
+  for(var i=1;i<=dm;i++){var ds=y+'-'+(m+1<10?'0':'')+(m+1)+'-'+(i<10?'0':'')+i;var cl='cald';if(state.history.indexOf(ds)!==-1)cl+=' std';if(i===td)cl+=' tdy';c+='<div class="'+cl+'">'+i+'</div>';}
+  return c+'</div></div>';
+}
+
+function renderSSScores(){
+  var c='<div class="calcard"><div class="calt">\ud83c\udfc6 Social Studies Scores</div>';
+  SS_TOPICS.forEach(function(t){var b=state.ss_scores[t.id],p=b!==undefined?b:0,d=b!==undefined;
+  c+='<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:20px">'+t.emoji+'</span><span style="flex:1;font-weight:700;font-size:13px">'+t.name+'</span><div style="width:90px;height:7px;background:#eee;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+p+'%;background:'+t.color+';border-radius:4px"></div></div><span style="font-weight:800;font-size:12px;color:'+(d?t.color:'#ccc')+';min-width:36px;text-align:right">'+(d?p+'%':'\u2014')+'</span></div>';});
+  return c+'</div>';
+}
+
+/* SS QUIZ RENDERING */
+function renderSSQuiz(){
+  var t=state.topic,q=t.questions[state.qi],pg=((state.qi+1)/t.questions.length)*100,qC='';
+  if(q.type==='multiple'){shuffleOpts(q);qC=renderMC(q,t);}
+  else if(q.type==='tf')qC=renderTFQ(q,t);
+  else if(q.type==='write')qC=renderWR(q,t);
+  else if(q.type==='fib')qC=renderFIB(q,t);
+  else if(q.type==='match')qC=renderMatch(q,t);
+  var sk=state.streak>=2?'<div class="strk">\ud83d\udd25 '+state.streak+' in a row!</div>':'';
+  var db='';if(q.diff)db=' <span class="diff '+q.diff+'">'+q.diff+'</span>';
+  return '<div class="hdr sm"><h1>\ud83c\udf0e Social Studies</h1></div><div class="nav"><button class="bk" id="bk">\u2190 Back</button><div class="pgw"><div class="pgf" style="width:'+pg+'%;background:'+t.color+'"></div></div><span class="pgn">'+(state.qi+1)+'/'+t.questions.length+'</span></div><div class="bdg" style="background:'+t.color+'20;color:'+t.color+'">'+t.emoji+' '+t.name+'</div><div class="qc"><div class="qb" style="background:'+(q.type==='write'?'#FF6B6B':q.type==='tf'?'#FF9800':q.type==='fib'?'#8E24AA':q.type==='match'?'#00897B':t.color)+'">'+(q.type==='write'?'\u270f\uFE0F Deep Think':q.type==='tf'?'\u26a1 True/False':q.type==='fib'?'\ud83e\udde9 Fill in Blank':q.type==='match'?'\ud83d\udd17 Matching':'\ud83e\udde0 Quiz')+db+'</div><div class="qt">'+q.q+'</div>'+qC+'</div><div class="sctr">Score: '+state.score+'/'+state.total+' '+'\u2b50'.repeat(Math.min(state.score,8))+sk+'</div>';
+}
+
+function renderMC(q,t){var L=['A','B','C','D'],h='<div class="opts">';q.options.forEach(function(o,i){var cl='opt',bg=t.color+'20',lc=t.color,ic=L[i];if(state.showed){cl+=' lk';if(i===q.answer){cl+=' cor';bg='#4CAF50';lc='white';ic='\u2713';}else if(i===state.sel){cl+=' wrg';bg='#EF5350';lc='white';ic='\u2717';}}h+='<button class="'+cl+'" data-oi="'+i+'"><span class="ol" style="background:'+bg+';color:'+lc+'">'+ic+'</span>'+o+'</button>';});h+='</div>';if(state.showed)h+=explH(q,state.sel===q.answer);return h;}
+function renderTFQ(q,t){var tc='tf',fc='tf';if(state.showed){tc+=' lk';fc+=' lk';if(q.answer===true){tc+=' cor';if(state.sel===false)fc+=' wrg';}else{fc+=' cor';if(state.sel===true)tc+=' wrg';}}var h='<div class="tfw"><button class="'+tc+'" data-tv="true">\u2705 TRUE</button><button class="'+fc+'" data-tv="false">\u274c FALSE</button></div>';if(state.showed)h+=explH(q,state.sel===q.answer);return h;}
+function explH(q,c){var h='<div class="expl '+(c?'cor':'inc')+'"><div class="et" style="color:'+(c?'#2E7D32':'#E65100')+'">'+(c?'\ud83c\udf89 Correct!':'\u274c Not quite \u2014 here\'s why:')+'</div><div class="eb">'+q.explanation+'</div></div>';if(q.funFact)h+='<div class="fun">\ud83e\udd13 <strong>Fun Fact:</strong> '+q.funFact+'</div>';h+='<button class="nbtn" id="nxt">'+(state.qi<state.topic.questions.length-1?'Next Question \u2192':'See Results! \ud83c\udfc6')+'</button>';return h;}
+function renderFIB(q,t){var h='';if(q.hint)h+='<div class="fib-hint">\ud83d\udca1 Hint: '+q.hint+'</div>';if(q.multi){h+='<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px"><input class="fib-input" id="fib1" placeholder="First blank..." value="'+state.fibVal+'"'+(state.fibDone?' disabled':'')+'><input class="fib-input" id="fib2" placeholder="Second blank..." value="'+(state.fibVal2||'')+'"'+(state.fibDone?' disabled':'')+'></div>';}else{h+='<input class="fib-input" id="fib1" placeholder="Type your answer..." value="'+state.fibVal+'" style="margin-top:8px"'+(state.fibDone?' disabled':'')+'>';}if(!state.fibDone)h+='<button class="sbtn" id="chkfib" style="background:'+(state.fibVal.trim()?t.color:'#ccc')+'"'+(state.fibVal.trim()?'':' disabled')+'>Check \ud83e\udde9</button>';if(state.fibFB){h+='<div class="wfb '+state.fibFB.type+'">'+state.fibFB.msg+'</div>';h+='<div class="expl '+(state.fibFB.type==='great'?'cor':'inc')+'" style="margin-top:8px"><div class="eb">'+q.explanation+'</div></div>';}if(state.fibDone)h+='<button class="nbtn" id="nxt">'+(state.qi<state.topic.questions.length-1?'Next \u2192':'Results! \ud83c\udfc6')+'</button>';return h;}
+function renderMatch(q,t){var pairs=q.pairs,rights=pairs.map(function(p){return p.right;});var shuffled=rights.slice().sort(function(){return Math.random()-0.5;});var h='<div class="match-grid">';pairs.forEach(function(p,i){var cls='match-row';if(state.matchChecked){cls+=state.matchSels[i]===p.right?' cor':' wrg';}h+='<div class="'+cls+'"><div class="match-label">'+p.left+'</div><div class="match-arrow">\u2192</div><select class="match-select" data-mi="'+i+'"'+(state.matchChecked?' disabled':'')+'><option value="">Choose...</option>';shuffled.forEach(function(r){var sel=state.matchSels[i]===r?' selected':'';h+='<option value="'+r+'"'+sel+'>'+r+'</option>';});h+='</select></div>';});h+='</div>';if(!state.matchChecked){var allF=pairs.every(function(_,i){return state.matchSels[i]&&state.matchSels[i]!=='';});h+='<button class="sbtn" id="chkmatch" style="background:'+(allF?t.color:'#ccc')+'"'+(allF?'':' disabled')+'>Check \ud83d\udd17</button>';}if(state.matchChecked){var numC=pairs.filter(function(p,i){return state.matchSels[i]===p.right;}).length;var allC=numC===pairs.length;h+='<div class="expl '+(allC?'cor':'inc')+'"><div class="et" style="color:'+(allC?'#2E7D32':'#E65100')+'">'+(allC?'\ud83c\udf89 Perfect!':numC+'/'+pairs.length+' correct:')+'</div><div class="eb">'+q.explanation+'</div></div>';h+='<button class="nbtn" id="nxt">'+(state.qi<state.topic.questions.length-1?'Next \u2192':'Results! \ud83c\udfc6')+'</button>';}return h;}
+function renderWR(q,t){var wc=state.writeVal.trim()?state.writeVal.trim().split(/\s+/).length:0;var h='<div class="hints"><div class="ht">\ud83d\udca1 Think about:</div>';q.hints.forEach(function(hi){h+='<div class="hi">\u2022 '+hi+'</div>';});h+='</div>';h+='<textarea class="wa" id="wa" placeholder="Write a detailed answer..."'+(state.writeDone?' disabled':'')+'>'+state.writeVal+'</textarea><div class="wc">'+wc+' word'+(wc!==1?'s':'')+'</div>';if(!state.writeDone)h+='<button class="sbtn" id="chkw" style="background:'+(state.writeVal.trim()?t.color:'#ccc')+'"'+(state.writeVal.trim()?'':' disabled')+'>Check \u270f\uFE0F</button>';if(state.writeFB)h+='<div class="wfb '+state.writeFB.type+'">'+state.writeFB.msg+'</div>';if(state.writeDone)h+='<button class="nbtn" id="nxt">'+(state.qi<state.topic.questions.length-1?'Next \u2192':'Results! \ud83c\udfc6')+'</button>';return h;}
+
+function renderSSResults(){
+  var t=state.topic,p=state.total>0?Math.round(state.score/state.total*100):0;var ej,ti,ms;if(p>=90){ej='\ud83c\udfc6';ti='AMAZING!';}else if(p>=70){ej='\u2b50';ti='Great Work!';}else if(p>=50){ej='\ud83d\udcd6';ti='Getting There!';}else{ej='\ud83c\udf31';ti='Keep Studying!';}ms=state.score+'/'+state.total+' correct';
+  var conf=p>=70?confHTML():'';
+  var rv='<div style="text-align:left;margin-top:18px"><h3 style="font-size:13px;margin-bottom:8px;color:#555">\ud83d\udccb Review:</h3>';state.answers.forEach(function(a){var bc=a.correct?'#4CAF50':'#EF5350';rv+='<div class="rev" style="border-left:4px solid '+bc+'"><div class="revq">'+(a.correct?'\u2705':'\u274c')+' '+a.question+'</div><div class="reva">'+a.yourAnswer+'</div>';if(!a.correct&&a.correctAnswer)rv+='<div class="revc">\u2713 '+a.correctAnswer+'</div>';rv+='</div>';});rv+='</div>';
+  return conf+'<div class="hdr sm"><h1>\ud83c\udf0e Social Studies</h1></div><div class="rcard"><div class="remj">'+ej+'</div><div class="rttl">'+ti+'</div><div class="rtpc">'+t.emoji+' '+t.name+'</div><div class="rring">'+pR(p,96,t.color)+'<div class="rpct" style="color:'+t.color+'">'+p+'%</div></div><div class="rscr">'+ms+'</div><div class="rbtns"><button class="rb pri" id="retry" style="background:'+t.color+'">Try Again \ud83d\udd04</button><button class="rb sec" id="hm">Topics \ud83d\udcda</button></div>'+rv+'</div>';
+}
+
+/* ===== MATH ===== */
+function renderMathHome(){
+  var tabs='<div class="tabs"><button class="tab'+(state.tab==='topics'?' on':'')+'" data-tab="topics">\ud83d\udcda Topics</button><button class="tab'+(state.tab==='progress'?' on':'')+'" data-tab="progress">\ud83d\udcc8 Progress</button></div>';
+  var c='';
+  if(state.tab==='topics'){
+    c='<div class="card" style="text-align:center;padding:14px"><div style="font-size:13px;font-weight:600;color:#555;line-height:1.6">Start with Topic 1 and work down! Each topic <strong>teaches first</strong>, then you practice. \ud83d\ude0a</div></div>';
+    MATH_TOPICS.forEach(function(t,i){
+      var best=state.math_scores[t.id];
+      var qCount=t.lessons.filter(function(l){return l.type==='mc';}).length;
+      var statusHTML='';
+      if(best!==undefined){
+        if(best>=80) statusHTML='<div class="tc-status" style="background:#E8F5E9;color:#2E7D32">\u2705 Mastered: '+best+'%</div>';
+        else statusHTML='<div class="tc-status" style="background:#FFF3E0;color:#E65100">\ud83d\udcaa Keep practicing: '+best+'%</div>';
+      } else statusHTML='<div class="tc-status" style="background:#E3F2FD;color:#1565C0">\u2728 Not started yet</div>';
+      var ring=best!==undefined?'<div class="pr">'+pR(best,42,t.color)+'<div class="prt" style="color:'+t.color+'">'+best+'%</div></div>':'';
+      c+='<div class="card tc" data-mti="'+i+'" style="border-left:5px solid '+t.color+';animation:slideUp .4s ease '+(i*.07)+'s both"><div class="ti" style="background:'+t.color+'18">'+t.emoji+'</div><div style="flex:1;min-width:0"><div class="tn">'+t.name+'</div><div class="td">'+t.desc+'</div>'+statusHTML+'</div>'+ring+'<div style="font-size:18px;color:#ccc;flex-shrink:0">\u2192</div></div>';
+    });
+  } else {
+    c+=renderCalendar();
+    c+='<div class="calcard"><div class="calt">\ud83c\udfc6 Math Scores</div>';
+    MATH_TOPICS.forEach(function(t){var b=state.math_scores[t.id],p=b!==undefined?b:0,d=b!==undefined;
+    c+='<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span style="font-size:20px">'+t.emoji+'</span><span style="flex:1;font-weight:700;font-size:13px">'+t.name+'</span><div style="width:90px;height:7px;background:#eee;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+p+'%;background:'+t.color+';border-radius:4px"></div></div><span style="font-weight:800;font-size:12px;color:'+(d?t.color:'#ccc')+';min-width:36px;text-align:right">'+(d?p+'%':'\u2014')+'</span></div>';});
+    c+='</div>';
+  }
+  return '<div class="hdr"><h1>\ud83e\udde0 Math Buddy</h1><p>Learn step by step \u2014 you\'ve got this! \ud83d\udcaa</p></div><button class="bk" id="backSubj" style="margin-bottom:12px">\u2190 All Subjects</button>'+tabs+c+'<div class="ftr">Scores saved \u2764\uFE0F</div>';
+}
+
+function renderMathLesson(){
+  var t=state.topic,ls=t.lessons,step=ls[state.step];
+  var pg=((state.step+1)/ls.length)*100;
+  var h='<div class="hdr sm"><h1>\ud83e\udde0 Math Buddy</h1></div>';
+  h+='<div class="nav"><button class="bk" id="bk">\u2190 Back</button><div class="pgw"><div class="pgf" style="width:'+pg+'%;background:'+t.color+'"></div></div><span class="pgn">'+(state.step+1)+'/'+ls.length+'</span></div>';
+  if(step.type==='teach'){
+    h+='<div class="card"><div class="lesson-title">'+step.title+'</div>'+step.content+'</div>';
+    h+='<button class="nbtn" id="nxt">'+(state.step<ls.length-1?'Continue \u2192':'Finish! \ud83c\udf89')+'</button>';
+  } else if(step.type==='mc'){
+    shuffleOpts(step);
+    h+='<div class="card"><div style="display:inline-block;background:'+t.color+';color:white;padding:3px 10px;border-radius:8px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">\ud83e\udde0 Practice</div>';
+    h+='<div class="qt">'+step.q.replace(/\n/g,'<br>')+'</div>';
+    h+='<div class="mc-opts">';
+    step.options.forEach(function(o,i){var cl='mc-opt';if(state.showed){cl+=' lk';if(i===step.answer)cl+=' cor';else if(i===state.sel)cl+=' wrg';}h+='<button class="'+cl+'" data-moi="'+i+'">'+o+'</button>';});
+    h+='</div>';
+    if(state.showed){var correct=state.sel===step.answer;h+='<div class="fb '+(correct?'correct':'wrong')+'">'+(correct?'\ud83c\udf89 <strong>Yes!</strong> ':'Hmm, not quite \u2014 ')+step.explanation+'</div>';h+='<button class="nbtn" id="nxt">'+(state.step<ls.length-1?'Continue \u2192':'See Results! \ud83c\udfc6')+'</button>';}
+    h+='</div>';
+    h+='<div class="sctr">Score: '+state.score+'/'+state.total+(state.streak>=2?' \ud83d\udd25'+state.streak:'')+'</div>';
+  }
+  return h;
+}
+
+function renderMathResults(){
+  var t=state.topic,p=state.total>0?Math.round(state.score/state.total*100):0;
+  var ej,ti,ms;if(p>=90){ej='\ud83c\udfc6';ti='AMAZING!';}else if(p>=70){ej='\u2b50';ti='Great Job!';}else if(p>=50){ej='\ud83d\udcd6';ti='Good Effort!';}else{ej='\ud83c\udf31';ti='Keep Going!';}ms=state.score+'/'+state.total+' correct';
+  var conf=p>=70?confHTML():'';
+  return conf+'<div class="hdr sm"><h1>\ud83e\udde0 Math Buddy</h1></div><div class="rcard"><div class="remj">'+ej+'</div><div class="rttl">'+ti+'</div><div class="rtpc">'+t.emoji+' '+t.name+'</div><div class="rring">'+pR(p,96,t.color)+'<div class="rpct" style="color:'+t.color+'">'+p+'%</div></div><div class="rscr">'+ms+'</div><div class="rmsg">'+(p<70?'Go through the lessons again \u2014 each time you will understand more! \ud83d\udcaa':'You are getting it! \ud83c\udf1f')+'</div><div class="rbtns"><button class="rb pri" id="retry" style="background:'+t.color+'">Try Again \ud83d\udd04</button><button class="rb sec" id="hm">Topics \ud83d\udcda</button></div></div>';
+}
+
+/* ===== EVENT BINDING ===== */
+function bind(){
+  // Subject picker
+  var ps=el('pick-ss');if(ps)ps.addEventListener('click',function(){state.subject='ss';state.screen='home';state.tab='topics';render();});
+  var pm=el('pick-math');if(pm)pm.addEventListener('click',function(){state.subject='math';state.screen='home';state.tab='topics';render();});
+  var bs=el('backSubj');if(bs)bs.addEventListener('click',function(){state.subject=null;render();});
+  // Tabs
+  qs('.tab').forEach(function(b){b.addEventListener('click',function(){state.tab=b.dataset.tab;render();});});
+  // SS topic cards
+  qs('[data-ti]').forEach(function(c){c.addEventListener('click',function(){startSSTopic(SS_TOPICS[parseInt(c.dataset.ti)]);});});
+  // Math topic cards
+  qs('[data-mti]').forEach(function(c){c.addEventListener('click',function(){startMathTopic(MATH_TOPICS[parseInt(c.dataset.mti)]);});});
+  // Back
+  var bk=el('bk');if(bk)bk.addEventListener('click',function(){state.screen='home';render();window.scrollTo(0,0);});
+  // SS quiz interactions
+  qs('.opt:not(.lk)').forEach(function(b){b.addEventListener('click',function(){if(!state.showed)ssPickMC(parseInt(b.dataset.oi));});});
+  qs('.tf:not(.lk)').forEach(function(b){b.addEventListener('click',function(){if(!state.showed)ssPickTF(b.dataset.tv==='true');});});
+  var wa=el('wa');if(wa)wa.addEventListener('input',function(e){state.writeVal=e.target.value;var wc=state.writeVal.trim()?state.writeVal.trim().split(/\s+/).length:0;var wcE=document.querySelector('.wc');if(wcE)wcE.textContent=wc+' word'+(wc!==1?'s':'');var ck=el('chkw');if(ck){ck.disabled=!state.writeVal.trim();ck.style.background=state.writeVal.trim()?state.topic.color:'#ccc';}});
+  var ck=el('chkw');if(ck)ck.addEventListener('click',ssCheckWrite);
+  var f1=el('fib1');if(f1)f1.addEventListener('input',function(e){state.fibVal=e.target.value;var ck=el('chkfib');if(ck){ck.disabled=!state.fibVal.trim();ck.style.background=state.fibVal.trim()?state.topic.color:'#ccc';}});
+  var f2=el('fib2');if(f2)f2.addEventListener('input',function(e){state.fibVal2=e.target.value;});
+  var cf=el('chkfib');if(cf)cf.addEventListener('click',ssCheckFIB);
+  qs('.match-select').forEach(function(s){s.addEventListener('change',function(){state.matchSels[parseInt(s.dataset.mi)]=s.value;var q=state.topic.questions[state.qi];var allF=q.pairs.every(function(_,i){return state.matchSels[i]&&state.matchSels[i]!=='';});var cm=el('chkmatch');if(cm){cm.disabled=!allF;cm.style.background=allF?state.topic.color:'#ccc';}});});
+  var cm=el('chkmatch');if(cm)cm.addEventListener('click',ssCheckMatch);
+  // Math MC
+  qs('.mc-opt:not(.lk)').forEach(function(b){b.addEventListener('click',function(){if(!state.showed)mathPickMC(parseInt(b.dataset.moi));});});
+  // Next/retry/home
+  var nx=el('nxt');if(nx)nx.addEventListener('click',function(){if(state.subject==='ss')ssNext();else mathNext();});
+  var rt=el('retry');if(rt)rt.addEventListener('click',function(){if(state.subject==='ss')startSSTopic(state.topic);else startMathTopic(state.topic);});
+  var hm=el('hm');if(hm)hm.addEventListener('click',function(){state.screen='home';render();window.scrollTo(0,0);});
+}
+
+/* ===== SS LOGIC ===== */
+function startSSTopic(t){t.questions.forEach(function(q){if(q.type==='multiple')q._sh=false;});state.topic=t;state.qi=0;state.sel=null;state.showed=false;state.score=0;state.total=0;state.writeVal='';state.writeDone=false;state.writeFB=null;state.streak=0;state.answers=[];state.matchSels={};state.matchChecked=false;state.fibVal='';state.fibVal2='';state.fibDone=false;state.fibFB=null;state.screen='quiz';logDay();render();window.scrollTo(0,0);}
+function ssPickMC(i){var q=state.topic.questions[state.qi];state.sel=i;state.showed=true;state.total++;var c=i===q.answer;if(c){state.score++;state.streak++;if(state.streak>state.bestStreak)state.bestStreak=state.streak;}else state.streak=0;state.answers.push({question:q.q,yourAnswer:(c?'\u2713 ':'\u2717 ')+q.options[i],correctAnswer:c?null:q.options[q.answer],correct:c});render();}
+function ssPickTF(v){var q=state.topic.questions[state.qi];state.sel=v;state.showed=true;state.total++;var c=v===q.answer;if(c){state.score++;state.streak++;if(state.streak>state.bestStreak)state.bestStreak=state.streak;}else state.streak=0;state.answers.push({question:q.q,yourAnswer:(c?'\u2713 ':'\u2717 ')+(v?'True':'False'),correctAnswer:c?null:(q.answer?'True':'False'),correct:c});render();}
+function ssCheckFIB(){var q=state.topic.questions[state.qi];state.fibDone=true;state.total++;var correct=false;var typoNote=null;if(q.multi){var r1=fuzzyMatch(state.fibVal,[q.answer[0]]),r2=fuzzyMatch(state.fibVal2||"",[q.answer[1]]);if(!r1.match||!r2.match){r1=fuzzyMatch(state.fibVal,[q.answer[1]]);r2=fuzzyMatch(state.fibVal2||"",[q.answer[0]]);}correct=r1.match&&r2.match;}else{var r=fuzzyMatch(state.fibVal,q.answer);correct=r.match;if(correct&&!r.exact)typoNote=q.answer[0];}if(correct){state.score++;state.streak++;if(state.streak>state.bestStreak)state.bestStreak=state.streak;var fmsg='\ud83c\udf89 Correct!';if(typoNote)fmsg+=' <span style="color:#888;font-size:11px">(Spelling: "'+typoNote+'")</span>';state.fibFB={type:'great',msg:fmsg};}else{state.streak=0;var ans=q.multi?q.answer[0]+' and '+q.answer[1]:q.answer[0];state.fibFB={type:'try',msg:'\u274c The answer was: <strong>'+ans+'</strong>'};}state.answers.push({question:q.q,yourAnswer:'\ud83d\udcdd "'+state.fibVal+'"',correctAnswer:correct?null:(q.multi?q.answer.join(' and '):q.answer[0]),correct:correct});render();}
+function ssCheckMatch(){var q=state.topic.questions[state.qi];state.matchChecked=true;state.total++;var numC=q.pairs.filter(function(p,i){return state.matchSels[i]===p.right;}).length;var allC=numC===q.pairs.length;if(allC){state.score++;state.streak++;if(state.streak>state.bestStreak)state.bestStreak=state.streak;}else if(numC>=q.pairs.length/2){state.score++;state.streak=0;}else{state.streak=0;}state.answers.push({question:q.q,yourAnswer:numC+'/'+q.pairs.length+' matched',correctAnswer:allC?null:'See explanation',correct:allC});render();}
+function ssCheckWrite(){var q=state.topic.questions[state.qi];var low=state.writeVal.toLowerCase();var found=q.keyWords.filter(function(k){return low.indexOf(k.toLowerCase())!==-1;});var wc=state.writeVal.trim().split(/\s+/).length;state.writeDone=true;state.total++;var type,msg;if(wc<8){type='try';msg="Too short! Aim for 3-5 sentences. \ud83d\udcdd";state.streak=0;}else if(found.length>=4){type='great';msg='\ud83c\udf1f Excellent! Key concepts: "'+found.slice(0,5).join('", "')+'".';state.score++;state.streak++;if(state.streak>state.bestStreak)state.bestStreak=state.streak;}else if(found.length>=2){type='good';msg='Good! You mentioned "'+found.join('", "')+'". Go deeper! \ud83d\udca1';state.score++;state.streak++;}else{type='try';msg="Keep going! Include more details. \ud83d\udcaa";state.streak=0;}state.writeFB={type:type,msg:msg};state.answers.push({question:q.q,yourAnswer:'\ud83d\udcdd "'+state.writeVal.substring(0,60)+'..."',correctAnswer:null,correct:found.length>=2&&wc>=8});render();}
+function ssNext(){if(state.qi<state.topic.questions.length-1){state.qi++;state.sel=null;state.showed=false;state.writeVal='';state.writeDone=false;state.writeFB=null;state.matchSels={};state.matchChecked=false;state.fibVal='';state.fibVal2='';state.fibDone=false;state.fibFB=null;}else{var p=state.total>0?Math.round(state.score/state.total*100):0;state.ss_scores[state.topic.id]=Math.max(state.ss_scores[state.topic.id]||0,p);saveData();state.screen='results';}render();window.scrollTo(0,0);}
+
+/* ===== MATH LOGIC ===== */
+function startMathTopic(t){t.lessons.forEach(function(l){if(l.type==='mc')l._sh=false;});state.topic=t;state.step=0;state.sel=null;state.showed=false;state.score=0;state.total=0;state.streak=0;state.answers=[];state.screen='lesson';logDay();render();window.scrollTo(0,0);}
+function mathPickMC(i){var step=state.topic.lessons[state.step];state.sel=i;state.showed=true;state.total++;var c=i===step.answer;if(c){state.score++;state.streak++;if(state.streak>state.bestStreak)state.bestStreak=state.streak;}else state.streak=0;render();}
+function mathNext(){if(state.step<state.topic.lessons.length-1){state.step++;state.sel=null;state.showed=false;}else{var p=state.total>0?Math.round(state.score/state.total*100):0;state.math_scores[state.topic.id]=Math.max(state.math_scores[state.topic.id]||0,p);saveData();state.screen='results';}render();window.scrollTo(0,0);}
+
+render();
+});
+</script>
+</body>
+</html>
